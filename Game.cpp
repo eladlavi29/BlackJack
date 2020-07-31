@@ -18,7 +18,7 @@ void Game::run() {
 		cout << "\n";
 
 		deck.shuffle();
-		dealer.newGame(deck);
+		dealer.newGame(deck, true);
 		hand.turn(deck, input);
 		cout << "\n";
 		
@@ -29,5 +29,67 @@ void Game::run() {
 	}
 
 	cout << "Game ended. Your money: " << hand.getMoney() << "\n";
+}
+
+
+void Game::run(DM& dm) {
+	int input = 0;
+	while (input >= 0) {
+		//The game
+		cout << "The computer's money: " << hand.getMoney() << "\n";
+
+		if (input == 0) {
+			cout << "Insert how many more rounds you want the computer to play before asking again \nenter 0 to stop playing ";
+			cin >> input;
+			cout << "\n";
+
+			if (input == 0) break;
+		}
+		--input;
+
+		deck.shuffle();
+		dealer.newGame(deck, true);
+		hand.turn(deck, dm, dealer.reaveled(), true);
+		cout << "\n";
+
+		//The results
+		hand.results(dealer, deck, dm, false);
+
+		cout << "\n";
+	}
+
+	cout << "Game ended. The computer's money: " << dm.getFitness() << "\n";
+}
+
+void Game::rankDM(DM& dm) {
+	for (int i = 0; i < timesWithMinCoeffcient; ++i) {
+		//The game
+		deck.shuffle();
+		dealer.newGame(deck, false);
+		hand.turn(deck, dm, dealer.reaveled(), false);
+
+		//The results
+		hand.results(dealer, deck, dm, true);
+	}
+
+	dm.setFitness(hand.getMoney());
+	cout << "The object final fitness is " << dm.getFitness() << "\n";
+	dm.print(0, 10, 16);
+	dm.print(1, 10, 8);
+	dm.print(2, 10, 10);
+}
+
+int Game::rankDMforCalc(DM& dm, int rep) {
+	for (int i = 0; i < rep; ++i) {
+		//The game
+		deck.shuffle();
+		dealer.newGame(deck, false);
+		hand.turn(deck, dm, dealer.reaveled(), false);
+
+		//The results
+		hand.results(dealer, deck, dm, true);
+	}
+
+	return hand.getMoney();
 }
 

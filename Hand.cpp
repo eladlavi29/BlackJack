@@ -4,13 +4,13 @@
 #include "Hand.h"
 using namespace std;
 
-Hand::Hand():money(0){}
+Hand::Hand():money(0), ace(false), blackjack(false){}
 
 void Hand::setMoney(int money) { this->money = money; }
 int Hand::getMoney() { return money; };
 
 void Hand::printHand() {
-	cout << "Your current hand: ";
+	cout << "Current hand: ";
 	for (auto x : hand) {
 		cout << x->toString() << " ";
 	}
@@ -20,6 +20,9 @@ void Hand::printHand() {
 
 void Hand::draw(Deck& deck) {
 	hand.push_back(deck.draw());
+
+	//cout << hand[hand.size() - 1]->toString() << "\n";
+
 	sumNbet.top()[0] += hand[hand.size() - 1]->getValue();
 	if (!ace && hand[hand.size() - 1]->isAce()) ace = true;
 
@@ -62,6 +65,14 @@ void Hand::turn(Deck &deck, int bet) {
 	for (int i = 0; i < 2; i++) 
 		draw(deck);
 	
+	if (sumNbet.top()[0] == 21) {
+		cout << "Balckjack!!! \n";
+
+		hand.clear(); ace = false;
+
+		return;
+	}
+
 	char choice;
 	Card splitted(-1, '0'); int playing = 1;
 
@@ -98,6 +109,7 @@ void Hand::turn(Deck &deck, int bet) {
 
 		hand.clear(); ace = false;
 		if (playing > 0) {
+			ace = splitted.isAce();
 			hand.push_back(&splitted);
 			array<int, 2> temp = { splitted.getValue(), sumNbet.top()[1] };
 			sumNbet.push(temp);
@@ -120,7 +132,7 @@ void Hand::results(Dealer& d, Deck& deck) {
 		}
 
 		if (dealer == -1) {
-			dealer = d.play(deck);
+			dealer = d.play(deck, true);
 		}
 
 		cout << "Hand number " << count << " has ";
@@ -138,5 +150,128 @@ void Hand::results(Dealer& d, Deck& deck) {
 
 		count++;
 		sumNbet.pop();
+	}
+}
+
+
+void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
+	//Draw strating hand
+	money -= betDM; ace = false;
+
+	array<int, 2> temp = { 0, betDM };
+	sumNbet.push(temp);
+
+	draw(deck);
+	draw(deck);
+
+	if (sumNbet.top()[0] == 21) {
+		//cout << "Balckjack!!! " << "\n";
+		blackjack = true;
+
+		hand.clear(); ace = false;
+		while(!sumNbet.empty()) sumNbet.pop();
+
+		return;
+	}
+
+	char choice;
+	Card splitted(-1, '0'); int playing = 1;
+	bool canSplit;
+
+	//While there is a hand to play
+	while (playing > 0) {
+		playing--;
+		if (output){
+			printHand();
+			cout << "\n";
+		}
+
+		if (sumNbet.top()[0] < 21) {
+			canSplit = hand[0]->getValue() == hand[1]->getValue();
+			choice = dm.decide(sumNbet.top()[0], dealer->getValue(), true, ace, canSplit, !output);
+			if(output) cout << "The computer has chosen to " << choice << "\n";
+		}
+		while (sumNbet.top()[0] < 21 && choice != 's') {
+			if (choice == 'p') {
+				playing++;
+				splitted = *hand[1];
+				hand.erase(hand.begin() + 1);
+				sumNbet.top()[0] -= splitted.getValue();
+			}
+			else if (choice == 'd') {
+				money -= betDM;
+
+				sumNbet.top()[1] += sumNbet.top()[1];
+				draw(deck);
+
+				break;
+			}
+			draw(deck);
+
+			if (output) {
+				printHand();
+				cout << "\n";
+			}
+
+			if (sumNbet.top()[0] < 21) {
+				choice = dm.decide(sumNbet.top()[0], dealer->getValue(), false, ace, false, !output);
+				if(output) cout << "The computer has chosen to " << choice << "\n";
+			}
+		}
+
+		if (output) {
+			printHand();
+			cout << "\n";
+		}
+
+		hand.clear(); ace = false;
+		if (playing > 0) {
+			ace = splitted.isAce();
+			hand.push_back(&splitted);
+			array<int, 2> temp = { splitted.getValue(), sumNbet.top()[1] };
+			sumNbet.push(temp);
+			draw(deck);
+		}
+	}
+}
+
+void Hand::results(Dealer& d, Deck& deck, DM& dm, bool ranking) {
+	if (blackjack) {
+		blackjack = false;
+
+		return;
+	}
+	int profits; int sum; int bet;
+	int dealer = -1; int count = 0;
+	while (!sumNbet.empty()) {
+		int sum = sumNbet.top()[0]; int bet = sumNbet.top()[1];
+		if (sum > 21) {
+			if (!ranking) cout << "Hand lost \n";
+			else dm.rank(false, count);
+
+			sumNbet.pop();
+			continue;
+		}
+
+		if (dealer == -1)
+			dealer = d.play(deck, !ranking);
+
+		if (sum < dealer) {
+			if (!ranking) cout << "Hand lost \n";
+			else dm.rank(false, count);
+		}
+
+		else if (sum > dealer) {
+			if (!ranking) cout << "Hand won \n";
+			else dm.rank(true, count);
+
+			money += 2 * bet;
+		}
+		else {
+			if (!ranking) cout << "Hand didn't win or lose \n";
+			money += bet;
+		}
+
+		sumNbet.pop(); count++;
 	}
 }

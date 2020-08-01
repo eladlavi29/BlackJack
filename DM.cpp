@@ -14,7 +14,7 @@ void DM::setFitness(int fitness) {
 
 #define cd (double)
 double DM::getWinningExpectation() {
-	return cd fitness/cd betDM/cd timesWithMinCoeffcient;
+	return cd fitness / cd betDM / cd timesWithMinCoeffcient;
 }
 
 void DM::build(int ind, const int& num1, const int& num2) {
@@ -27,11 +27,11 @@ void DM::build(int ind, const int& num1, const int& num2) {
 			dmRanking[ind][i][j] = 0;
 	}
 }
-const int dealer = 11- 1;//2 to A
+const int dealer = 11 - 1;//2 to A
 const int hard = 20 - 4; //5 to 20
 const int soft = 9 - 1; //2 to 9
 const int pairs = 11 - 1; //2 to A
-DM::DM():fitness(0) {
+DM::DM() :fitness(0) {
 	//Hard hands' table
 	build(0, dealer, hard);
 	//Soft hands' table;
@@ -79,50 +79,61 @@ void DM::generate() {
 			random = options[rand() % options.size()];
 			dm[2][i][j] = random;
 		}
-	}	
+	}
 }
 
 void DM::addMove(int ind, int& num1, int num2) {
-	array<int, 3> arr = {ind, num1, num2};
+	array<int, 3> arr = { ind, num1, num2 };
 	plays.push_back(arr);
 }
 
 char canDouble(bool firstMove, char ch) {
-	if (ch == 'd' && !firstMove) return 'h';
+	if (ch == 'd' && !firstMove) ch = 'h';
+	cout << ch << "\n";
 	return ch;
 }
 char DM::decide(int sum, int dealerReaveled, bool firstMove, bool hasAce, bool canSplit, bool ranking) {
 	dealerReaveled -= 2;
 	if (canSplit) {
 		if (hasAce) {
-			if(ranking) addMove(2, dealerReaveled, 9);
+			if (ranking) addMove(2, dealerReaveled, 9);
 			return canDouble(firstMove, dm[2][dealerReaveled][9]);
 		}
-		if(ranking) addMove(2, dealerReaveled, sum / 2 - 2);
+		if (ranking) addMove(2, dealerReaveled, sum / 2 - 2);
 		return canDouble(firstMove, dm[2][dealerReaveled][sum / 2 - 2]);
 	}
 
 	if (hasAce) {
-		if(ranking) addMove(1, dealerReaveled, sum - 11 - 2);
+		if (ranking) addMove(1, dealerReaveled, sum - 11 - 2);
 		return canDouble(firstMove, dm[1][dealerReaveled][sum - 11 - 2]);
 	}
 
-	if(ranking) addMove(0, dealerReaveled, sum - 5);
+	if (ranking) addMove(0, dealerReaveled, sum - 5);
 	return canDouble(firstMove, dm[0][dealerReaveled][sum - 5]);
 }
 
+vector<array<int, 3>> playsCopy;
 void DM::rank(bool result, int split) {
-	const int plays_size = plays.size();
-	int doubleBet = 1;
-
-	if (dm[plays[0][0]][plays[0][1]][plays[0][2]] == 'd') doubleBet = doubleBet * 2;
-
+	//לדבג אחושרמוטה לדבג ואז להפוך את מערך פיצולים לבוליאני
 	int i = 0;
 	for (int j = 0; j < split; ++j) {
 		++i;
-		while (dm[plays[i][0]][plays[i][1]][plays[i][2]] != 's')
+		while (dm[plays[i][0]][plays[i][1]][plays[i][2]] == 'h')
 			++i;
 	}
+
+	playsCopy.clear();
+	playsCopy.push_back(plays[i]); ++i;
+	for (; i < plays.size() && dm[plays[i][0]][plays[i][1]][plays[i][2]] == 'h'; ++i) {
+		playsCopy.push_back(plays[i]);
+	}
+	if (i == plays.size())
+		plays.clear();
+	
+	const int plays_size = playsCopy.size();
+	int doubleBet = 1;
+
+	if (dm[plays[0][0]][plays[0][1]][plays[0][2]] == 'd') doubleBet = doubleBet * 2;
 
 	if (result)
 		dmRanking[plays[i][0]][plays[i][1]][plays[i][2]] += betDM * doubleBet / plays_size;
@@ -130,17 +141,14 @@ void DM::rank(bool result, int split) {
 		dmRanking[plays[i][0]][plays[i][1]][plays[i][2]] -= betDM * doubleBet / plays_size;
 	++i;
 
-	for (; i < plays_size && dm[plays[i][0]][plays[i][1]][plays[i][2]] != 's'; ++i) {
-		if (result) 
+	for (; i < plays_size && dm[plays[i][0]][plays[i][1]][plays[i][2]] != 'p'; ++i) {
+		if (result)
 			dmRanking[plays[i][0]][plays[i][1]][plays[i][2]] += betDM * doubleBet / plays_size;
 		else
 			dmRanking[plays[i][0]][plays[i][1]][plays[i][2]] -= betDM * doubleBet / plays_size;
 	}
 
 	cout << "\n" << i << " " << plays_size << "\n\n";
-
-	if(i == plays_size)
-		plays.clear();
 
 
 	print(0, dealer, hard);

@@ -7,7 +7,7 @@ Game::Game(int money) {
 void Game::run() {
 
 	int input;
-	while (hand.getMoney() > 0){
+	while (hand.getMoney() > 0) {
 		//The game
 		cout << "Your money: " << hand.getMoney() << "\n";
 		cout << "Insert any amount of money you have to bet \nInsert any other number to stop playing \n";
@@ -21,11 +21,11 @@ void Game::run() {
 		dealer.newGame(deck, true);
 		hand.turn(deck, input);
 		cout << "\n";
-		
+
 		//The results
 		hand.results(dealer, deck);
 
-		cout << "\n";	
+		cout << "\n";
 	}
 
 	cout << "Game ended. Your money: " << hand.getMoney() << "\n";
@@ -92,4 +92,3 @@ int Game::rankDMforCalc(DM& dm, int rep) {
 
 	return hand.getMoney();
 }
-

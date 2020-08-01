@@ -5,7 +5,7 @@
 using namespace std;
 
 //The object Card
-class Card{
+class Card {
 private:
 	int num;
 	char type;
@@ -57,4 +57,3 @@ public:
 	//return a pointer to the dealer reaveled card
 	Card* reaveled();
 };
-

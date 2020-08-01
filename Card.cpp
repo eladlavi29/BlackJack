@@ -5,7 +5,7 @@
 #include "Card.h"
 using namespace std;
 
-Card::Card(int num, char type): num(num), type(type) {}
+Card::Card(int num, char type) : num(num), type(type) {}
 
 int Card::getValue() {
 	if (num == 1) return 11;
@@ -32,7 +32,7 @@ string Card::toString() {
 	default: rank = num + '0';
 	}
 	ss << rank << type;
-	
+
 	return ss.str();
 }
 
@@ -55,7 +55,7 @@ void Deck::shuffle() {
 Card* Deck::draw() {
 	int r = rand() % deck.size();
 	Card* card = deck[r];
-	
+
 	deck.erase(deck.begin() + r);
 
 	return card;
@@ -69,19 +69,19 @@ void Deck::print() {
 }
 
 
-Dealer::Dealer():handSum(0), ace(false){}
+Dealer::Dealer() :handSum(0), ace(false) {}
 
 void Dealer::newGame(Deck& deck, bool output) {
 	dealer.clear(); handSum = 0; ace = false;
 	dealer.push_back(deck.draw());
 	handSum += dealer[0]->getValue();
 	if (!ace && dealer[0]->isAce()) ace = true;
-	if(output)
+	if (output)
 		cout << "The dealer's revealed card is " << dealer[0]->toString() << "\n";
 }
 
 int Dealer::play(Deck& deck, bool output) {
-	if(output)
+	if (output)
 		cout << "The dealer's cards: " << dealer[0]->toString() << " ";
 	int count = 1;
 	while (handSum < 17) {
@@ -89,14 +89,14 @@ int Dealer::play(Deck& deck, bool output) {
 		handSum += dealer[count]->getValue();
 		if (!ace && dealer[count]->isAce()) ace = true;
 
-		if(output) cout << dealer[count]->toString() << " ";
+		if (output) cout << dealer[count]->toString() << " ";
 		count++;
 		if (ace && handSum > 21) {
 			ace = false;
 			handSum -= 10;
 		}
 	}
-	if(output)
+	if (output)
 		cout << "\nHis sum: " << handSum << "\n";
 	if (handSum > 21) return 0;
 	return handSum;

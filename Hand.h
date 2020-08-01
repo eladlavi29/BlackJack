@@ -9,7 +9,7 @@
 using namespace std;
 
 //The player's gameplay class
-class Hand{
+class Hand {
 private:
 
 	vector<Card*> hand;
@@ -35,6 +35,5 @@ public:
 	void turn(Deck& deck, DM& dm, Card* dealer, bool output);
 	void results(Dealer& d, Deck& deck, DM& dm, bool ranking);
 };
-
 
 

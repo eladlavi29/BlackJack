@@ -1,9 +1,8 @@
 #include <iostream>
 #include <vector>
 #include "Game.h"
-using namespace std;
 
-#include "practicalFuncs.h"
+using namespace std;
 
 int main() {
 	DM dm;
@@ -13,7 +12,7 @@ int main() {
 	game.rankDM(dm);
 
 	//cout << dm.getWinningExpectation() << "\n";
-	
+
 	//cout << calcCoefficientOfVariation(100000, 100);
 
 	return 0;

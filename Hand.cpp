@@ -4,7 +4,7 @@
 #include "Hand.h"
 using namespace std;
 
-Hand::Hand():money(0), ace(false), blackjack(false){}
+Hand::Hand() :money(0), ace(false), blackjack(false) {}
 
 void Hand::setMoney(int money) { this->money = money; }
 int Hand::getMoney() { return money; };
@@ -55,16 +55,16 @@ char Hand::move(bool firstMove, int bet) {
 	return choice;
 }
 
-void Hand::turn(Deck &deck, int bet) {
+void Hand::turn(Deck& deck, int bet) {
 	//Draw strating hand
 	money -= bet; ace = false;
 
-	array<int, 2> temp = {0, bet};
+	array<int, 2> temp = { 0, bet };
 	sumNbet.push(temp);
 
-	for (int i = 0; i < 2; i++) 
+	for (int i = 0; i < 2; i++)
 		draw(deck);
-	
+
 	if (sumNbet.top()[0] == 21) {
 		cout << "Balckjack!!! \n";
 
@@ -82,7 +82,7 @@ void Hand::turn(Deck &deck, int bet) {
 
 		printHand();
 
-		if(sumNbet.top()[0] < 21) choice = move(true, bet);
+		if (sumNbet.top()[0] < 21) choice = move(true, bet);
 		while (sumNbet.top()[0] < 21 && choice != 's') {
 			if (choice == 'p') {
 				playing++;
@@ -104,7 +104,7 @@ void Hand::turn(Deck &deck, int bet) {
 
 			printHand();
 
-			if(sumNbet.top()[0] < 21) choice = move(false, bet);
+			if (sumNbet.top()[0] < 21) choice = move(false, bet);
 		}
 
 		hand.clear(); ace = false;
@@ -123,7 +123,7 @@ void Hand::results(Dealer& d, Deck& deck) {
 	int profits; int count = 1; int sum; int bet;
 	int dealer = -1;;
 	while (!sumNbet.empty()) {
-		int sum = sumNbet.top()[0]; int bet = sumNbet.top()[1];
+		sum = sumNbet.top()[0]; bet = sumNbet.top()[1];
 		if (sum > 21) {
 			cout << "Hand number " << count << " has lost " << bet << "\n";
 			count++;
@@ -169,7 +169,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 		blackjack = true;
 
 		hand.clear(); ace = false;
-		while(!sumNbet.empty()) sumNbet.pop();
+		while (!sumNbet.empty()) sumNbet.pop();
 
 		return;
 	}
@@ -181,7 +181,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 	//While there is a hand to play
 	while (playing > 0) {
 		playing--;
-		if (output){
+		if (output) {
 			printHand();
 			cout << "\n";
 		}
@@ -189,7 +189,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 		if (sumNbet.top()[0] < 21) {
 			canSplit = hand[0]->getValue() == hand[1]->getValue();
 			choice = dm.decide(sumNbet.top()[0], dealer->getValue(), true, ace, canSplit, !output);
-			if(output) cout << "The computer has chosen to " << choice << "\n";
+			if (output) cout << "The computer has chosen to " << choice << "\n";
 		}
 		while (sumNbet.top()[0] < 21 && choice != 's') {
 			if (choice == 'p') {
@@ -215,7 +215,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 
 			if (sumNbet.top()[0] < 21) {
 				choice = dm.decide(sumNbet.top()[0], dealer->getValue(), false, ace, false, !output);
-				if(output) cout << "The computer has chosen to " << choice << "\n";
+				if (output) cout << "The computer has chosen to " << choice << "\n";
 			}
 		}
 

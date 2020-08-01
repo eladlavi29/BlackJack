@@ -5,8 +5,10 @@
 #include "Card.h"
 using namespace std;
 
+//The object Card
 Card::Card(int num, char type): num(num), type(type) {}
 
+//Get the card value according to blackjack
 int Card::getValue() {
 	if (num == 1) return 11;
 	if (num >= 10) return 10;
@@ -15,6 +17,7 @@ int Card::getValue() {
 
 bool Card::isAce() { return num == 1; }
 
+//toString
 string Card::toString() {
 	stringstream ss;
 	char rank;
@@ -37,13 +40,9 @@ string Card::toString() {
 }
 
 
-Deck::Deck() {
-	srand(time(NULL));
-}
+Deck::Deck() {}
 
 void Deck::shuffle() {
-	if (deck.size() >= minNeeded) return;
-
 	deck.clear();
 	char types[4] = { 'h', 'd', 'c', 's' };
 	for (int i = 0; i < 4; i++) {
@@ -53,55 +52,41 @@ void Deck::shuffle() {
 }
 
 Card* Deck::draw() {
+	srand(time(NULL));
 	int r = rand() % deck.size();
 	Card* card = deck[r];
-	
 	deck.erase(deck.begin() + r);
 
 	return card;
 }
 
-void Deck::print() {
-	for (auto x : deck) {
-		cout << x->toString() << " ";
-	}
-	cout << "\n";
-}
 
+Dealer::Dealer() {}
 
-Dealer::Dealer():handSum(0), ace(false){}
-
-void Dealer::newGame(Deck& deck, bool output) {
+void Dealer::newGame(Deck& deck) {
 	dealer.clear(); handSum = 0; ace = false;
 	dealer.push_back(deck.draw());
 	handSum += dealer[0]->getValue();
 	if (!ace && dealer[0]->isAce()) ace = true;
-	if(output)
-		cout << "The dealer's revealed card is " << dealer[0]->toString() << "\n";
+	cout << "The dealer's revealed card is " << dealer[0]->toString() << "\n";
 }
 
-int Dealer::play(Deck& deck, bool output) {
-	if(output)
-		cout << "The dealer's cards: " << dealer[0]->toString() << " ";
+int Dealer::play(Deck& deck) {
+	cout << "The dealer's cards: " << dealer[0]->toString() << " ";
 	int count = 1;
 	while (handSum < 17) {
 		dealer.push_back(deck.draw());
 		handSum += dealer[count]->getValue();
 		if (!ace && dealer[count]->isAce()) ace = true;
 
-		if(output) cout << dealer[count]->toString() << " ";
+		cout << dealer[count]->toString() << " ";
 		count++;
 		if (ace && handSum > 21) {
 			ace = false;
 			handSum -= 10;
 		}
 	}
-	if(output)
-		cout << "\nHis sum: " << handSum << "\n";
+	cout << "\nHis sum: " << handSum << "\n";
 	if (handSum > 21) return 0;
 	return handSum;
-}
-
-Card* Dealer::reaveled() {
-	return dealer[0];
 }

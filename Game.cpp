@@ -58,6 +58,8 @@ void Game::run(DM& dm) {
 		cout << "\n";
 	}
 
+	dm.setFitness(hand.getMoney());
+
 	cout << "Game ended. The computer's money: " << dm.getFitness() << "\n";
 }
 

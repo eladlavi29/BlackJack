@@ -165,7 +165,10 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 	draw(deck);
 
 	if (sumNbet.top()[0] == 21) {
-		//cout << "Balckjack!!! " << "\n";
+		if (output) {
+			cout << "Balckjack!!! " << "\n";
+			money += betDM * 2;
+		}
 		blackjack = true;
 
 		hand.clear(); ace = false;
@@ -179,6 +182,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 	bool canSplit;
 
 	//While there is a hand to play
+	bool hasSplitted = false;
 	while (playing > 0) {
 		playing--;
 		if (output) {
@@ -188,7 +192,11 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 
 		if (sumNbet.top()[0] < 21) {
 			canSplit = hand[0]->getValue() == hand[1]->getValue();
-			choice = dm.decide(sumNbet.top()[0], dealer->getValue(), true, ace, canSplit, !output);
+			choice = dm.decide(sumNbet.top()[0], dealer->getValue(), true, ace, canSplit, hasSplitted, !output);
+
+			if (choice == 'p')
+				hasSplitted = true;
+			
 			if (output) cout << "The computer has chosen to " << choice << "\n";
 		}
 		while (sumNbet.top()[0] < 21 && choice != 's') {
@@ -197,6 +205,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 				splitted = *hand[1];
 				hand.erase(hand.begin() + 1);
 				sumNbet.top()[0] -= splitted.getValue();
+				money -= betDM;
 			}
 			else if (choice == 'd') {
 				money -= betDM;
@@ -214,7 +223,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 			}
 
 			if (sumNbet.top()[0] < 21) {
-				choice = dm.decide(sumNbet.top()[0], dealer->getValue(), false, ace, false, !output);
+				choice = dm.decide(sumNbet.top()[0], dealer->getValue(), false, ace, false, false, !output);
 				if (output) cout << "The computer has chosen to " << choice << "\n";
 			}
 		}
@@ -242,12 +251,12 @@ void Hand::results(Dealer& d, Deck& deck, DM& dm, bool ranking) {
 		return;
 	}
 	int profits; int sum; int bet;
-	int dealer = -1; int count = 0;
+	int dealer = -1;
 	while (!sumNbet.empty()) {
 		int sum = sumNbet.top()[0]; int bet = sumNbet.top()[1];
 		if (sum > 21) {
 			if (!ranking) cout << "Hand lost \n";
-			else dm.rank(false, count);
+			else dm.rank(false);
 
 			sumNbet.pop();
 			continue;
@@ -258,12 +267,12 @@ void Hand::results(Dealer& d, Deck& deck, DM& dm, bool ranking) {
 
 		if (sum < dealer) {
 			if (!ranking) cout << "Hand lost \n";
-			else dm.rank(false, count);
+			else dm.rank(false);
 		}
 
 		else if (sum > dealer) {
 			if (!ranking) cout << "Hand won \n";
-			else dm.rank(true, count);
+			else dm.rank(true);
 
 			money += 2 * bet;
 		}
@@ -272,6 +281,6 @@ void Hand::results(Dealer& d, Deck& deck, DM& dm, bool ranking) {
 			money += bet;
 		}
 
-		sumNbet.pop(); count++;
+		sumNbet.pop();
 	}
 }

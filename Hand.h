@@ -36,4 +36,3 @@ public:
 	void results(Dealer& d, Deck& deck, DM& dm, bool ranking);
 };
 
-

@@ -5,7 +5,7 @@
 using namespace std;
 
 const int betDM = 100;
-const int timesWithMinCoeffcient = 100;
+const int timesWithMinCoeffcient = 20;
 class DM
 {
 private:
@@ -24,19 +24,18 @@ private:
 
 	//Auxiliary functions
 	void build(int ind, const int& num1, const int& num2);
-
-	//Add a move to the vector
-	void addMove(int ind, int& num1, int num2);
 public:
 	//Diffult constructor
 	DM(); //insert 0 everywhere in dmRanking
 	//Ransomize dm
 	void generate();
 
+	//Add a move to the vector
+	void addMove(int ind, int num1, int num2);
 	//Make a decision according to the object's data
-	char decide(int sum, int dealerReaveled, bool firstMove, bool hasAce, bool canSplit, bool ranking);
+	char decide(int sum, int dealerReaveled, bool firstMove, bool hasAce, bool canSplit, bool hasSplitted, bool ranking);
 	//Update dmRanking according to the results
-	void rank(bool result, int split);
+	void rank(bool result);
 
 	//Return and change the object's fitness score
 	int getFitness();
@@ -46,5 +45,4 @@ public:
 
 	void print(int ind, const int& num1, const int& num2);
 };
-
 

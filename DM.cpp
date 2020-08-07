@@ -1,4 +1,4 @@
-﻿#include "DM.h"
+#include "DM.h"
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>  
@@ -112,7 +112,7 @@ char DM::decide(int sum, int dealerReaveled, bool firstMove, bool hasAce, bool c
 	}
 	//If reached this point then didn't split
 	//If has splitted but didn't split then add p
-	if(hasSplitted)
+	if (hasSplitted)
 		if (ranking) addMove(2, dealerReaveled, sum / 2 - 2);
 
 
@@ -127,7 +127,7 @@ char DM::decide(int sum, int dealerReaveled, bool firstMove, bool hasAce, bool c
 
 int index = 0;
 void DM::rank(bool result) {
-	//arrange the p before the decisions
+	//Why inserts once p and then n??
 
 	if (plays.empty()) return;
 	for (int i = 0; i < plays.size(); ++i) cout << dm[plays[i][0]][plays[i][1]][plays[i][2]] << " ";
@@ -142,7 +142,7 @@ void DM::rank(bool result) {
 
 	int doubleBet = 1;
 	if (dm[plays[index][0]][plays[index][1]][plays[index][2]] == 'd') doubleBet = doubleBet * 2;
-	
+
 	for (; index < plays_size && dm[plays[index][0]][plays[index][1]][plays[index][2]] != 'p'; ++index) {
 		if (result)
 			dmRanking[plays[index][0]][plays[index][1]][plays[index][2]] += betDM * doubleBet / decisionCount;

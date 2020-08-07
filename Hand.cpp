@@ -196,7 +196,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 
 			if (choice == 'p')
 				hasSplitted = true;
-			
+
 			if (output) cout << "The computer has chosen to " << choice << "\n";
 		}
 		while (sumNbet.top()[0] < 21 && choice != 's') {
@@ -207,7 +207,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, bool output) {
 				sumNbet.top()[0] -= splitted.getValue();
 				money -= betDM;
 			}
-			else if (choice == 'd') {
+			if (choice == 'd') {
 				money -= betDM;
 
 				sumNbet.top()[1] += sumNbet.top()[1];

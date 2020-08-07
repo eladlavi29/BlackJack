@@ -3,7 +3,7 @@
 #include "Hand.h"
 using namespace std;
 
-class Game {
+class Game{
 private:
 	Deck deck;
 	Hand hand;
@@ -17,3 +17,4 @@ public:
 
 	int rankDMforCalc(DM& dm, int rep); //Rank a DM
 };
+

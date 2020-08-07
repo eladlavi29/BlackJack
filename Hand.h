@@ -35,4 +35,3 @@ public:
 	void turn(Deck& deck, DM& dm, Card* dealer, bool output);
 	void results(Dealer& d, Deck& deck, DM& dm, bool ranking);
 };
-

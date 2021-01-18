@@ -5,7 +5,7 @@
 using namespace std;
 
 const int betDM = 100;
-const int timesWithMinCoeffcient = 20;
+const int timesWithMinCoeffcient = 1;
 class DM
 {
 private:
@@ -33,10 +33,14 @@ public:
 	//Ransomize dm
 	void generate();
 
-	//Make a decision according to the object's data
-	char decide(int sum, int dealerReaveled, bool firstMove, bool hasAce, bool canSplit, bool hasSplitted, bool ranking);
+	//Make a decision according to the object's data (When split relevant)
+	bool decideSplit(int sum, int dealerReaveled, bool hasAce, bool ranking);
+	//Make a decision according to the object's data (When split irrelevant)
+	char decideReg(int sum, int dealerReaveled, bool firstMove, bool hasAce, int hasSplitted, bool ranking);
+	//Special scenario, got a perfect hand (21 2 card) and not black jack
+	void perfectAfterSplit(int dealerReaveled, int hasSplitted);
 	//Update dmRanking according to the results
-	void rank(bool result);
+	void rank(bool result, bool tie);
 
 	//Return and change the object's fitness score
 	int getFitness();

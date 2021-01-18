@@ -53,7 +53,7 @@ void Game::run(DM& dm) {
 		cout << "\n";
 
 		//The results
-		hand.results(dealer, deck, dm, false);
+		hand.results(dealer, deck, dm, false, true);
 
 		cout << "\n";
 	}
@@ -65,13 +65,14 @@ void Game::run(DM& dm) {
 
 void Game::rankDM(DM& dm) {
 	for (int i = 0; i < timesWithMinCoeffcient; ++i) {
-		//The game
+		//Prepare the game
 		deck.shuffle();
 		dealer.newGame(deck, false);
+
 		hand.turn(deck, dm, dealer.reaveled(), false);
 
 		//The results
-		hand.results(dealer, deck, dm, true);
+		hand.results(dealer, deck, dm, true, false);
 	}
 
 	dm.setFitness(hand.getMoney());
@@ -89,7 +90,7 @@ int Game::rankDMforCalc(DM& dm, int rep) {
 		hand.turn(deck, dm, dealer.reaveled(), false);
 
 		//The results
-		hand.results(dealer, deck, dm, true);
+		hand.results(dealer, deck, dm, true, false);
 	}
 
 	return hand.getMoney();

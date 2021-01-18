@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <vector>
-#include <set>
 using namespace std;
 
 //The object Card
@@ -28,8 +27,6 @@ const int minNeeded = 6 * 4 + 3; //The min cards needed in a deck for a round
 class Deck {
 private:
 	vector<Card*> deck;
-
-	set<Card*> s;
 
 public:
 	Deck();

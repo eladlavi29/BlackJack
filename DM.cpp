@@ -89,32 +89,43 @@ void DM::addMove(int ind, int num1, int num2) {
 	plays.push_back(arr);
 }
 
-char fix(bool firstMove, char ch) {
+bool DM::decideSplit(int sum, int dealerReaveled, bool hasAce, bool ranking) {
+	dealerReaveled -= 2;
+
+	if (hasAce) {
+		//If decided to split hasSplitted will be updated and any new hand will regard 'p' as a move
+		if (dm[2][dealerReaveled][9] == 'p') {
+			return true;
+		}
+		//Else 'n' will be regarded once
+		else {
+			if (ranking) addMove(2, dealerReaveled, 9);
+			return false;
+		}
+	}
+	else {
+		//If decided to split hasSplitted will be updated and any new hand will regard 'p' as a move
+		if (dm[2][dealerReaveled][sum / 2 - 2] == 'p') return true;
+		//Else 'n' will be regarded once
+		else {
+			if (ranking) addMove(2, dealerReaveled, sum / 2 - 2);
+			return false;
+		}
+	}
+}
+
+inline char fix(bool firstMove, char ch) {
 	if (ch == 'd' && !firstMove) ch = 'h';
+
 	return ch;
 }
-char DM::decide(int sum, int dealerReaveled, bool firstMove, bool hasAce, bool canSplit, bool hasSplitted, bool ranking) {
+char DM::decideReg(int sum, int dealerReaveled, bool firstMove, bool hasAce, int hasSplitted, bool ranking) {
 	dealerReaveled -= 2; char ch;
-	if (canSplit) {
-		if (hasAce) {
-			//Can also rank the decision not to p
-			if (ranking) addMove(2, dealerReaveled, 9);
-			ch = dm[2][dealerReaveled][0];
-		}
-		else {
-			//Can also rank the decision not to p
-			if (ranking) addMove(2, dealerReaveled, sum / 2 - 2);
-			ch = dm[2][dealerReaveled][sum / 2 - 2];
-		}
-
-		if (ch == 'p')
-			return 'p';
+	
+	//As explained in decideSplit
+	if (hasSplitted > 0 && firstMove && ranking) {
+		addMove(2, dealerReaveled, hasSplitted - 2);
 	}
-	//If reached this point then didn't split
-	//If has splitted but didn't split then add p
-	if (hasSplitted)
-		if (ranking) addMove(2, dealerReaveled, sum / 2 - 2);
-
 
 	if (hasAce) {
 		if (ranking) addMove(1, dealerReaveled, sum - 11 - 1);
@@ -125,20 +136,44 @@ char DM::decide(int sum, int dealerReaveled, bool firstMove, bool hasAce, bool c
 	return fix(firstMove, dm[0][dealerReaveled][sum - 4]);
 }
 
-int index = 0;
-void DM::rank(bool result) {
-	//Why inserts once p and then n??
+void DM::perfectAfterSplit(int dealerReaveled, int hasSplitted) {
+	//If splitted and then got a perfect hand then the only move in the hand is split
+	//Therefore there has to be a special function that addMove p specificaly for this scenario
+	addMove(2, dealerReaveled - 2, hasSplitted - 2);
+}
 
-	if (plays.empty()) return;
-	for (int i = 0; i < plays.size(); ++i) cout << dm[plays[i][0]][plays[i][1]][plays[i][2]] << " ";
-	plays.clear();
-	cout << "\n";
-	/*const int plays_size = plays.size();
+int index = 0; bool aaa = true;
+void DM::rank(bool result, bool tie) {
+
+	if (aaa) {
+		for (int i = 0; i < plays.size(); ++i) {
+			cout << dm[plays[i][0]][plays[i][1]][plays[i][2]] << " ";
+		}
+		cout << "\n";
+		aaa = false;
+	}
+
+	const int plays_size = plays.size();
+	//If it's a tie skip this hand
+	if (tie) {
+		for (; index < plays_size && dm[plays[index][0]][plays[index][1]][plays[index][2]] != 'p'; ++index) {}
+
+		if (index == plays_size) {
+			plays.clear();
+			index = 0;
+		}
+
+		return;
+	}
+
+	//Count how many decision were in this hand
 	int decisionCount = 0;
-	int i;
-	for (i = index; i < plays_size && dm[plays[i][0]][plays[i][1]][plays[i][2]] != 'p'; ++i)
+	if (dm[plays[index][0]][plays[index][1]][plays[index][2]] == 'p') {
+		++index; ++decisionCount;
+	}
+	for (int i = index; i < plays_size && dm[plays[i][0]][plays[i][1]][plays[i][2]] != 'p'; ++i) {
 		++decisionCount;
-	if (i != plays_size) ++decisionCount;
+	}
 
 	int doubleBet = 1;
 	if (dm[plays[index][0]][plays[index][1]][plays[index][2]] == 'd') doubleBet = doubleBet * 2;
@@ -167,5 +202,15 @@ void DM::rank(bool result) {
 
 	print(0, dealer, hard);
 	print(1, dealer, soft);
-	print(2, dealer, pairs);*/
+	print(2, dealer, pairs);
+
+	/*if (plays.empty()) {
+	cout << "empty \n";
+	return;
+	}
+	for (int i = 0; i < plays.size(); ++i) {
+		cout << dm[plays[i][0]][plays[i][1]][plays[i][2]] << " ";
+	}
+	plays.clear();
+	cout << "\n\n";*/
 }

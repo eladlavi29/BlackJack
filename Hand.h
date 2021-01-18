@@ -13,7 +13,7 @@ class Hand {
 private:
 
 	vector<Card*> hand;
-	bool ace;
+	int ace;
 	bool blackjack;
 	stack<array<int, 2>> sumNbet;
 
@@ -26,12 +26,12 @@ public:
 	int getMoney(); //Return the player's money
 
 	void draw(Deck& deck);
-	char move(bool firstMove, int bet); //Move acc to input
+	char move(int bet); //Move acc to input
 	void turn(Deck& deck, int bet); //The turn method
 
 	void results(Dealer& d, Deck& deck); //Update the Hand data acc to sumNbet
 
 	//The turn and results with dm
 	void turn(Deck& deck, DM& dm, Card* dealer, bool output);
-	void results(Dealer& d, Deck& deck, DM& dm, bool ranking);
+	void results(Dealer& d, Deck& deck, DM& dm, bool ranking, bool output);
 };

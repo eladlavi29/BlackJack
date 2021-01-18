@@ -43,7 +43,7 @@ Deck::Deck() {
 
 void Deck::shuffle() {
 	if (deck.size() >= minNeeded) return;
-
+	
 	deck.clear();
 	char types[4] = { 'h', 'd', 'c', 's' };
 	for (int i = 0; i < 4; i++) {

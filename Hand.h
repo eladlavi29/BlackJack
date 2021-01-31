@@ -4,13 +4,17 @@
 #include <array>
 #include <sstream>
 #include "Card.h"
+#include "DM.h"
+
 using namespace std;
 
 //The player's gameplay class
-class Hand{
+class Hand {
 private:
+
 	vector<Card*> hand;
-	bool ace;
+	int ace;
+	bool blackjack;
 	stack<array<int, 2>> sumNbet;
 
 	int money;
@@ -22,12 +26,16 @@ public:
 	int getMoney(); //Return the player's money
 
 	void draw(Deck& deck);
-	char move(bool firstMove, int bet); //Move acc to input
-	void turn(Deck &deck, int bet); //The turn method
-	//void turn(DecisionMaking dm);
+	char move(int bet); //Move acc to input
+	void turn(Deck& deck, int bet); //The turn method
 
-	void results(Dealer& dealer, Deck& deck); //Update the Hand data acc to sumNbet
+	void results(Dealer& d, Deck& deck); //Update the Hand data acc to sumNbet
+
+	//The turn and results with dm when ranking
+	void turn(Deck& deck, DM& dm, Card* dealer);
+	void results(Dealer& d, Deck& deck, DM& dm);
+
+	//The turn and results with dm when printing output
+	void turnRanking(Deck& deck, DM& dm, Card* dealer);
+	void resultsRanking(Dealer& d, Deck& deck, DM& dm);
 };
-
-
-

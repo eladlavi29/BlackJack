@@ -10,6 +10,12 @@ private:
 	Dealer dealer;
 public:
 	Game(int money);
-	void run();
+	void run(); //Run the game with a player
+	void run(DM& dm); //Run the game with DM
+
+	//run time for one loop : 0.000027 s
+	void rankDM(DM& dm); //Rank a DM
+
+	float rankDMforCalc(DM& dm, int rep); //Rank a DM
 };
 

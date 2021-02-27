@@ -26,6 +26,7 @@ private:
 	void rankingProcess();
 	void elitism(); //More about it in the function
 
+	int selectionProcess();
 	void breedingProcess();
 
 	void updateData();
@@ -38,5 +39,7 @@ public:
 	bool stopEvoloution();
 
 	void printData();
+
+	void check();
 };
 

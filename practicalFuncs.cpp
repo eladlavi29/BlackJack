@@ -1,5 +1,6 @@
 #include "Game.h"
-#include<time.h>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
@@ -13,11 +14,10 @@ void useLiveTextInConsoleExample() {
 }
 
 //Random Function
-bool flag = true;
+bool flagRandom = true;
 unsigned long random() {
-	if(flag)
-		srand(time(0));
-	flag = false;
+	if (flagRandom) srand(time(NULL));
+	flagRandom = false;
 	return rand();
 }
 //Choose one of two obj randomly coresponding to values

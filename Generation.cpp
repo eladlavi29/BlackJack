@@ -12,7 +12,7 @@ Generation::Generation() : generationNumber(2), avgWinningExp(0), avgImprovement
 		generation[i] = new DM;
 		generation[i]->generate();
 	}
-
+	
 	rankingProcess();
 
 	system("cls"); //Clean the outputs
@@ -59,12 +59,13 @@ void Generation::erasePreGeneration(int startingInd) {
 
 
 void Generation::lifetime() {
+
 	cout << "Generation number " << generationNumber << " is on progress \n";
 
 	breedingProcess();
 
 	rankingProcess();
-	
+
 	system("cls"); //Clean the outputs
 	//print the generation stats
 	cout << "Generation number " << generationNumber << " stats: \n";
@@ -81,7 +82,9 @@ void Generation::rankingProcess() {
 	float preAvgWinningExp = avgWinningExp; avgWinningExp = 0;
 	int bestFitness = INT_MIN; int currentFitness;
 	for (int i = 0; i < generationSize; ++i) {
-		game->rankDM(*generation[i]);
+		//if the chromo haven't been ranked, rank it
+		if (!generation[i]->getFitness() != 0) 
+			game->rankDM(*generation[i]);
 
 		currentFitness = generation[i]->getFitness();
 		if (currentFitness > bestFitness) {
@@ -91,6 +94,7 @@ void Generation::rankingProcess() {
 
 		avgWinningExp += generation[i]->getWinningExpectation();
 	}
+	
 	//Update the relevant data (other then the generation itself)
 	avgWinningExp = avgWinningExp / generationSize;
 	avgImprovement = avgWinningExp - preAvgWinningExp;
@@ -100,57 +104,88 @@ void Generation::rankingProcess() {
 		bestImprovement = generation[bestChromoInd]->getWinningExpectation() - preBestWinningExp;
 	}
 
-	elitism();
 	updateData();
 
 	delete game;
 }
 
+int elitistsAmout;
+bool comp(DM* dm1, DM* dm2) {
+	return (dm1->getFitness() < dm2->getFitness());
+}
 void Generation::elitism() {
 	//Sort elitism precentage of the generation
 	//This functions helps to keep only the best chromo alive
 	//I assume it's ideal not to use it, so for now I'll only make sure I save the best chromo
-	swap(generation[0], generation[bestChromoInd]);
-	bestChromoInd = 0;
+	if (elitisimPrecRate != 0) {
+		swap(generation[0], generation[bestChromoInd]);
+		bestChromoInd = 0;
+	}
+
+	/*if (elitisimPrecRate != 0) {
+		elitistsAmout = generationSize * elitisimPrecRate;
+		nth_element(generation, generation + elitistsAmout - 1, generation + generationSize, comp);
+	}*/
+}
+
+vector<int> selectionOptions, selected;
+int Generation::selectionProcess() {
+	if (selectionOptions.empty()) {
+		for (int i = 0; i < generationSize; ++i) selectionOptions.push_back(i);
+	}
+
+	int rand, chosen = -1, bestFitness = INT_MIN, curFitness;
+	for (int i = 0; i < tourney; ++i) {
+		rand = (int)random() % selectionOptions.size();
+		selected.push_back(rand);
+		selectionOptions.erase(selectionOptions.begin() + rand);
+
+		curFitness = generation[rand]->getFitness();
+		if (curFitness > bestFitness) {
+			bestFitness = curFitness;
+			chosen = rand;
+		}
+	}
+
+	for (auto x : selected) selectionOptions.push_back(x);
+	//deleteVector
+	//vector<int>().swap(selected);
+	selected.clear(); //selected.shrink_to_fit();
+
+	return chosen;
 }
 
 void Generation::breedingProcess() {
 
-	//Fathers pick process
-	DM** fathers;
-	fathers = new DM* [tourney + 1];
-	for (int i = 0; i < tourney + 1; ++i) {
-		fathers[i] = new DM();
-	}
-	//put the best chromo in the 0 cell for convenience
-	fathers[0]->copy(generation[bestChromoInd]);
+	elitism();
 
-	int rand;
-	for (int i = 1; i <= tourney; ++i) {
-		rand = (int)(random() % (generationSize - 1) + 1);
-		fathers[i]->copy(generation[rand]);
+	DM** newGeneration = new DM* [generationSize];
+	//Generate the new generation's survivors
+	for (int i = 0; i < survivorsAmount; ++i) {
+		newGeneration[i] = generation[i];
+	}
+
+	//Generate the new generation's offsprings
+	int selection1, selection2;
+	int save;
+	for (int i = survivorsAmount; i < generationSize; ++i) {
+		//Select 2 fathers
+		selection1 = selectionProcess();
+		//Make sure selection1 doesn't repeat
+		save = generation[selection1]->getFitness();
+		generation[selection1]->setFitness(INT_MIN); //It will always lose selection
+		selection2 = selectionProcess();
+		generation[selection1]->setFitness(save);
+		newGeneration[i] = generation[selection1]->crossover(generation[selection2]);
 	}
 
 	erasePreGeneration(survivorsAmount);
-
-	//Generate the new generation
-	int first; int last = survivorsAmount; //Skip the ones that aren't including acc to the crossover Rate
-	for (int i = 1; i <= tourney; ++i) {
-		first = last;
-		if (i == tourney) last = generationSize;
-		else last = fatherBreedingSize + last;
-
-		for (int j = first; j < last; ++j) {
-			generation[j] = fathers[0]->crossover(fathers[i]);
-		}
-	}
-
-	delete []fathers;
+	generation = newGeneration;
 }
 
 int notImproving = 0;
 bool Generation::stopEvoloution() {
-	if (bestImprovement < 0.0001) ++notImproving;
+	if (bestImprovement < 0.001) ++notImproving;
 	else notImproving = 0;
 
 	if (notImproving == 3) return true;
@@ -158,3 +193,25 @@ bool Generation::stopEvoloution() {
 	return false;
 }
 
+void Generation::check() {
+	Game game(0);
+	DM* parent1 = new DM; parent1->generate();
+	game.rankDM(*parent1);
+
+	DM* parent2 = new DM; parent2->generate();
+	game.rankDM(*parent2); 
+
+	int count0 = 0, count1 = 0, count2 = 0;
+	int strong = parent1->getFitness(), weak = parent2->getFitness(); 
+	if (weak > strong) swap(weak, strong);
+	int curFitness;
+	for (int i = 0; i < generationSize; ++i) {
+		generation[i] = parent1->crossover(parent2);
+		game.rankDM(*generation[i]);
+		curFitness = generation[i]->getFitness();
+		if (curFitness < weak) ++count0;
+		else if (curFitness < strong) ++count1;
+		else ++count2;
+	}
+	cout << count1 << "chromoes are better than 1 father and " << count2 << "are better then both of them \n";
+}

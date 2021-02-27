@@ -76,25 +76,26 @@ void DM::printData() {
 	printTable(0, dealer, hard);
 	printTable(1, dealer, soft);
 	printTable(2, dealer, pairs);
+	cout << "\n";
 }
 
 void DM::generate() {
 	vector<char> options = { 's', 'h', 'd' };
-	char random;
+	char rand;
 
 	//Hard hands' table
 	for (int i = 0; i < dealer; ++i) {
 		for (int j = 0; j < hard; ++j) {
-			random = options[(int)rand() % options.size()];
-			dm[0][i][j] = random;
+			rand = options[(int)(random() % options.size())];
+			dm[0][i][j] = rand;
 		}
 	}
 
 	//Soft hands' table;
 	for (int i = 0; i < dealer; ++i) {
 		for (int j = 0; j < soft; ++j) {
-			random = options[(int)rand() % options.size()];
-			dm[1][i][j] = random;
+			rand = options[(int)(random() % options.size())];
+			dm[1][i][j] = rand;
 		}
 	}
 
@@ -105,8 +106,8 @@ void DM::generate() {
 
 	for (int i = 0; i < dealer; ++i) {
 		for (int j = 0; j < pairs; ++j) {
-			random = options[(int)rand() % options.size()];
-			dm[2][i][j] = random;
+			rand = options[(int)(random() % options.size())];
+			dm[2][i][j] = rand;
 		}
 	} 
 }
@@ -165,7 +166,7 @@ void DM::crossoverTable(int a, int b, int c, DM* chromo, DM* offspring) {
 		for (int j = 0; j < c; ++j) {
 			if (mutate())
 				ch = mutation(getMove(a, i, j), chromo->getMove(a, i, j));
-			else ch = a, i, j, dependentPick(getMove(a, i, j), getFitness(), chromo->getMove(a, i, j), chromo->getFitness());
+			else ch = dependentPick(getMove(a, i, j), getFitness(), chromo->getMove(a, i, j), chromo->getFitness());
 			offspring->setMove(a, i, j, ch);
 		}
 	}
@@ -183,3 +184,23 @@ DM* DM::crossover(DM* chromo) {
 	return offspring;
 }
 
+float fitsFather1, fitsFather2;
+void DM::checkTableAlikness(int a, int b, int c, DM* father1, DM* father2) {
+	for (int i = 0; i < b; ++i) {
+		for (int j = 0; j < c; ++j) {
+			if (getMove(a, i, j) == father1->getMove(a, i, j)) ++fitsFather1;
+			if (getMove(a, i, j) == father2->getMove(a, i, j)) ++fitsFather2;
+		}
+	}
+}
+float DM::checkOffspringAlikeness(DM* father1, DM* father2) {
+	fitsFather1 = 0; fitsFather2 = 0;
+
+	checkTableAlikness(0, dealer, hard, father1, father2);
+	checkTableAlikness(1, dealer, soft, father1, father2);
+	checkTableAlikness(2, dealer, pairs, father1, father2);
+
+	float totalCells = (float)(dealer * (hard + soft + pairs));
+
+	return ((fitsFather1 / totalCells) / (fitsFather2 / totalCells));
+}

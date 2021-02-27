@@ -6,6 +6,10 @@
 using namespace std;
 
 void machineLearning() {
+
+	/*Generation generation;
+	generation.check();*/
+
 	bool flag = true;
 	Generation generation;
 	while (flag) {
@@ -17,6 +21,7 @@ void machineLearning() {
 		}
 	}
 
+	system("cls");
 	cout << "\nMachine Learning process ended \n";
 	generation.printData();
 }

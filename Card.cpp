@@ -60,7 +60,7 @@ void Deck::shuffle() {
 }
 
 Card* Deck::draw() {
-	int r = (int)rand() % deck.size();
+	int r = (int)random() % deck.size();
 	Card* card = deck[r];
 
 	deck.erase(deck.begin() + r);

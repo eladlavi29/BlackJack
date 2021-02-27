@@ -19,9 +19,12 @@ private:
 	//Auxiliary functions
 	void build(int ind, const int& num1, const int& num2);
 
+	//Specific table functions
 	void copyTable(int ind, const int& num1, const int& num2, DM* copy);
 
 	void printTable(int ind, const int& num1, const int& num2);
+
+	void crossoverTable(int a, int b, int c, DM* chromo, DM* offspring);
 
 public:
 	//Diffult constructor & Copy function
@@ -47,6 +50,8 @@ public:
 
 	void printData();
 
-	void crossoverTable(int a, int b, int c, DM* chromo, DM* offspring);
 	DM* crossover(DM* chromo);
+
+	void checkTableAlikness(int a, int b, int c, DM* father1, DM* father2);
+	float checkOffspringAlikeness(DM* father1, DM* father2);
 };

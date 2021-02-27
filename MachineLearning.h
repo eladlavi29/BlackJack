@@ -8,19 +8,19 @@ const int timesWithMinCoeffcient = 10000;
 const int generationSize = 100;
 
 //Ideal tourney is
-const int tourney = 3;
+//tourney can't be 1 or larger then the generationSize
+const int tourney = 5;
 
 //Ideal crossover rate is 
-//(99 is for saving only the best chromo)
-const float crossoverPrecRate = 99;
+const float crossoverPrecRate = 100;
 //The survivors between every generation
 const int survivorsAmount = (int)((float)generationSize * (100 - crossoverPrecRate) / 100);
-//Caculate how many chromo will be generated next generation for each father (tourney)
-const int fatherBreedingSize = (generationSize - survivorsAmount) / tourney;
 
 //Ideal mutation rate is
 const float mutationPrecRate = 0;
 
+//Cant be bigger then the 100 - crossoverPrecRate
+const float elitisimPrecRate = 0; 
 
 //Functions
 void machineLearning();

@@ -133,7 +133,7 @@ void Hand::results(Dealer& d, Deck& deck) {
 		cout << "Balckjack!!! \n";
 
 		blackjack = false;
-		money += 2 * sumNbet.top()[1];
+		money += sumNbet.top()[1] * 15 / 10;
 
 		cout << "Hand number 1 has won " << sumNbet.top()[1] << " \n";
 		sumNbet.pop();
@@ -287,7 +287,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer) {
 void Hand::results(Dealer& d, Deck& deck, DM& dm) {
 	if (blackjack) {
 		cout << "Balckjack!!! " << "\n";
-		money += betDM * 1.5;
+		money += betDM * 15 / 10;
 
 		sumNbet.pop();
 		blackjack = false;

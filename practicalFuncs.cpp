@@ -66,10 +66,10 @@ float calcCoefficientOfVariation(int rep, int num) {
 
 //for 10000 the sd is 0.01, which is precise enough yet not too long
 void findIdealRepsAmount() {
-	int repCheck[] = {100, 1000, 10000, 100000};
+	int repCheck[] = {60000};
 	int rep; int checkSD;
 	for (int i = 0; i < sizeof(repCheck) / sizeof(repCheck[0]); ++i) {
-		rep = repCheck[i]; checkSD = 1e6 / rep;
+		rep = repCheck[i]; checkSD = 1000;
 		cout << "For rep = " << rep << " (checkSD = " << checkSD << "): ";
 		cout << calcCoefficientOfVariation(rep, checkSD) << "\n";
 	}

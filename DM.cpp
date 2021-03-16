@@ -63,8 +63,8 @@ void DM::copy(DM* copy) {
 }
 
 void DM::printTable(int ind, const int& num1, const int& num2) {
-	for (int i = 0; i < num1; ++i) {
-		for (int j = 0; j < num2; ++j) {
+	for (int j = num2 - 1; j >= 0; --j) {
+		for (int i = num1 - 1; i >= 0; --i) {
 			cout << dm[ind][i][j] << " ";
 		}
 		cout << "\n";

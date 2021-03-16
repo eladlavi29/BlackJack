@@ -2,10 +2,11 @@
 #include "Game.h"
 #include "MachineLearning.h"
 #include "practicalFuncs.h"
+#include <algorithm>
 
 using namespace std;
 
-Generation::Generation() : generationNumber(2), avgWinningExp(0), avgImprovement(0), bestImprovement(0), bestChromoInd(-1){
+Generation::Generation() : generationNumber(2), avgWinningExp(0), bestChromoInd(-1){
 	cout << "Generating the first generation \n";
 	generation = new DM*[generationSize];
 	for (int i = 0; i < generationSize; ++i) {
@@ -18,36 +19,29 @@ Generation::Generation() : generationNumber(2), avgWinningExp(0), avgImprovement
 	system("cls"); //Clean the outputs
 	//print the generation stats
 	cout << "First generation stats: \n";
-	cout << "Avg Winning Exp :  " << avgWinningExp << " \n";
-	cout << "The avg improvement from the prev generation :  " << avgImprovement << " \n\n";
 	cout << "The best chromo winning exp :  " << generation[bestChromoInd]->getWinningExpectation() << " \n\n";
+	cout << "Avg Winning Exp :  " << avgWinningExp << " \n";
 	printData();
 }
 
 void Generation::updateData() {
 	avgWinningExpData.push_back(avgWinningExp);
 	bestWinningExpData.push_back(generation[bestChromoInd]->getWinningExpectation());
-	avgImprovementData.push_back(avgImprovement);
-	bestImprovementData.push_back(bestImprovement);
 }
 void Generation::printData() {
-	cout << "The machine learning's data :  \n\n";
-
-	cout << "avgWinningExp :  \n";
-	for (auto x : avgWinningExpData)
-		cout << x << " ";
+	cout << "The machine learning's data : \n";
 
 	cout << "\nbestWinningExp :  \n";
 	for (auto x : bestWinningExpData)
 		cout << x << " ";
-	
-	cout << "\navgImprovement :  \n";
-	for (auto x : avgImprovementData)
-		cout << x << " ";
+	cout << "\n\n";
 
-	cout << "\nbestImprovement :  \n";
-	for (auto x : bestImprovementData)
+	cout << "avgWinningExp :  \n";
+	for (auto x : avgWinningExpData)
 		cout << x << " ";
+	cout << "\n\n";
+
+	bestChromo()->printData();
 	cout << "\n";
 }
 
@@ -57,9 +51,7 @@ void Generation::erasePreGeneration(int startingInd) {
 	}
 }
 
-
 void Generation::lifetime() {
-
 	cout << "Generation number " << generationNumber << " is on progress \n";
 
 	breedingProcess();
@@ -69,9 +61,8 @@ void Generation::lifetime() {
 	system("cls"); //Clean the outputs
 	//print the generation stats
 	cout << "Generation number " << generationNumber << " stats: \n";
-	cout << "Avg Winning Exp :  " << avgWinningExp << " \n";
-	cout << "The avg improvement from the prev generation :  " << avgImprovement << " \n\n";
 	cout << "The best chromo winning exp :  " << generation[bestChromoInd]->getWinningExpectation() << " \n\n";
+	cout << "Avg Winning Exp :  " << avgWinningExp << " \n";
 	printData();
 	++generationNumber;
 }
@@ -97,35 +88,22 @@ void Generation::rankingProcess() {
 	
 	//Update the relevant data (other then the generation itself)
 	avgWinningExp = avgWinningExp / generationSize;
-	avgImprovement = avgWinningExp - preAvgWinningExp;
-	//Don't updata in the first time when the vector's empty
-	if (!bestWinningExpData.empty()) {
-		float preBestWinningExp = bestWinningExpData[bestWinningExpData.size() - 1];
-		bestImprovement = generation[bestChromoInd]->getWinningExpectation() - preBestWinningExp;
-	}
 
 	updateData();
 
 	delete game;
 }
 
-int elitistsAmout;
+int elitistsAmount;
 bool comp(DM* dm1, DM* dm2) {
-	return (dm1->getFitness() < dm2->getFitness());
+	return (dm1->getFitness() > dm2->getFitness());
 }
 void Generation::elitism() {
 	//Sort elitism precentage of the generation
-	//This functions helps to keep only the best chromo alive
-	//I assume it's ideal not to use it, so for now I'll only make sure I save the best chromo
 	if (elitisimPrecRate != 0) {
-		swap(generation[0], generation[bestChromoInd]);
-		bestChromoInd = 0;
+		elitistsAmount = (int)((float)generationSize * elitisimPrecRate / 100);
+		nth_element(generation, generation + elitistsAmount - 1, generation + generationSize, comp);
 	}
-
-	/*if (elitisimPrecRate != 0) {
-		elitistsAmout = generationSize * elitisimPrecRate;
-		nth_element(generation, generation + elitistsAmout - 1, generation + generationSize, comp);
-	}*/
 }
 
 vector<int> selectionOptions, selected;
@@ -183,35 +161,17 @@ void Generation::breedingProcess() {
 	generation = newGeneration;
 }
 
-int notImproving = 0;
+int notImproving = -1; float avgImprovement;
 bool Generation::stopEvoloution() {
-	if (bestImprovement < 0.001) ++notImproving;
+	avgImprovement = avgWinningExpData[avgWinningExpData.size() - 1] - avgWinningExpData[avgWinningExpData.size() - 2];
+	if (avgImprovement < 0.001) ++notImproving;
 	else notImproving = 0;
 
-	if (notImproving == 3) return true;
+	if (notImproving == 3 || generationNumber == 48) return true;
 
 	return false;
 }
 
-void Generation::check() {
-	Game game(0);
-	DM* parent1 = new DM; parent1->generate();
-	game.rankDM(*parent1);
-
-	DM* parent2 = new DM; parent2->generate();
-	game.rankDM(*parent2); 
-
-	int count0 = 0, count1 = 0, count2 = 0;
-	int strong = parent1->getFitness(), weak = parent2->getFitness(); 
-	if (weak > strong) swap(weak, strong);
-	int curFitness;
-	for (int i = 0; i < generationSize; ++i) {
-		generation[i] = parent1->crossover(parent2);
-		game.rankDM(*generation[i]);
-		curFitness = generation[i]->getFitness();
-		if (curFitness < weak) ++count0;
-		else if (curFitness < strong) ++count1;
-		else ++count2;
-	}
-	cout << count1 << "chromoes are better than 1 father and " << count2 << "are better then both of them \n";
+DM* Generation::bestChromo() {
+	return generation[bestChromoInd];
 }

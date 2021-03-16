@@ -12,14 +12,10 @@ private:
 
 	int bestChromoInd;
 	float avgWinningExp; 
-	float avgImprovement;
-	float bestImprovement;
 
 	//Data tracking
 	vector<float> avgWinningExpData;
 	vector<float> bestWinningExpData;
-	vector<float> avgImprovementData;
-	vector<float> bestImprovementData;
 	
 	void erasePreGeneration(int startingInd);
 
@@ -40,6 +36,6 @@ public:
 
 	void printData();
 
-	void check();
+	DM* bestChromo();
 };
 

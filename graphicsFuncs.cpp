@@ -62,9 +62,9 @@ void loadMedia() {
 	}
 
 	//Grid definition
-	dealerHandGrid.h = CARD_HEIGHT; dealerHandGrid.w = CARD_WIDTH * 5 / 2; dealerHandGrid.x = SCREEN_WIDTH / 2 - dealerHandGrid.w / 2 - CARD_WIDTH / 2; dealerHandGrid.y = SCREEN_HEIGHT / 5 - dealerHandGrid.h / 2;//()
-	playerHandGrid.h = CARD_HEIGHT; playerHandGrid.w = CARD_WIDTH * 5 / 2; playerHandGrid.x = SCREEN_WIDTH * 3 / 4 - playerHandGrid.w / 2 - CARD_WIDTH / 2; playerHandGrid.y = SCREEN_HEIGHT * 4 / 5 - playerHandGrid.h / 2;//()
-	AIHandGrid.h = CARD_HEIGHT; AIHandGrid.w = CARD_WIDTH * 5 / 2; AIHandGrid.x = SCREEN_WIDTH / 4 - AIHandGrid.w / 2 - CARD_WIDTH / 2; AIHandGrid.y = SCREEN_HEIGHT * 4 / 5 - AIHandGrid.h / 2;//()
+	dealerHandGrid.h = CARD_HEIGHT; dealerHandGrid.w = CARD_WIDTH * 3; dealerHandGrid.x = SCREEN_WIDTH / 2 - dealerHandGrid.w / 2; dealerHandGrid.y = SCREEN_HEIGHT / 5 - dealerHandGrid.h / 2;//()
+	playerHandGrid.h = CARD_HEIGHT; playerHandGrid.w = CARD_WIDTH * 3; playerHandGrid.x = SCREEN_WIDTH * 3 / 4 - playerHandGrid.w / 2; playerHandGrid.y = SCREEN_HEIGHT * 4 / 5 - playerHandGrid.h / 2;//()
+	AIHandGrid.h = CARD_HEIGHT; AIHandGrid.w = CARD_WIDTH * 3; AIHandGrid.x = SCREEN_WIDTH / 4 - AIHandGrid.w / 2; AIHandGrid.y = SCREEN_HEIGHT * 4 / 5 - AIHandGrid.h / 2;//()
 }
 void initGraphics(){
 	//Create window
@@ -114,6 +114,7 @@ void printStats(Hand& player, Hand& AI) {
 	
 	//Update the surface
 	SDL_UpdateWindowSurface(gWindow);
+	SDL_Delay(2000);
 
 	//Text
 	cout << "The player's money: " << player.getMoney() << "\n";
@@ -132,7 +133,7 @@ void endGame(int playerMoney, int AIMoney) {
 void dealerNewGame(Card* reaveled) {
 	SDL_BlitScaled(cover_grid, NULL, gScreenSurface, &dealerHandGrid);
 	
-	int x = dealerHandGrid.x; int y = dealerHandGrid.y;
+	int x = dealerHandGrid.x - CARD_WIDTH / 2; int y = dealerHandGrid.y;
 	change = dealerHandGrid.w / (2 + 1);
 	x += change;
 	printCard(x, y, reaveled);
@@ -161,7 +162,7 @@ void dealerNewGame(Card* reaveled) {
 void dealerHand(vector<Card*>& dealer, int dealerSum) {
 	SDL_BlitScaled(cover_grid, NULL, gScreenSurface, &dealerHandGrid);
 
-	int x = dealerHandGrid.x; int y = dealerHandGrid.y;
+	int x = dealerHandGrid.x - CARD_WIDTH / 2; int y = dealerHandGrid.y;
 	change = dealerHandGrid.w / (dealer.size() + 1);
 	for (int i = 0; i < dealer.size(); ++i) {
 		x += change;
@@ -185,7 +186,7 @@ void dealerHand(vector<Card*>& dealer, int dealerSum) {
 void playerHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet) {
 	SDL_BlitScaled(cover_grid, NULL, gScreenSurface, &playerHandGrid);
 
-	int x = playerHandGrid.x; int y = playerHandGrid.y;
+	int x = playerHandGrid.x - CARD_WIDTH / 2; int y = playerHandGrid.y;
 	change = playerHandGrid.w / (hand.size() + 1);
 	for (int i = 0; i < hand.size(); ++i) {
 		x += change;
@@ -249,7 +250,7 @@ void playerNextHandResult() {
 void AIHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet) {
 	SDL_BlitScaled(cover_grid, NULL, gScreenSurface, &AIHandGrid);
 
-	int x = AIHandGrid.x; int y = AIHandGrid.y;
+	int x = AIHandGrid.x - CARD_WIDTH / 2; int y = AIHandGrid.y;
 	change = AIHandGrid.w / (hand.size() + 1);
 	for (int i = 0; i < hand.size(); ++i) {
 		x += change;

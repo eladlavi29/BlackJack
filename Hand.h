@@ -11,7 +11,6 @@ using namespace std;
 //The player's gameplay class
 class Hand {
 private:
-
 	vector<Card*> hand;
 	int ace;
 	bool blackjack;
@@ -20,7 +19,7 @@ private:
 	int money;
 public:
 	Hand(); //Generate a Hand
-	void printHand(); //Print the player's cards
+	vector<Card*> getCards();
 
 	void setMoney(int money); //Set the player's money
 	int getMoney(); //Return the player's money
@@ -29,11 +28,10 @@ public:
 	char move(int bet); //Move acc to input
 	void turn(Deck& deck, int bet); //The turn method
 
-	void results(Dealer& d, Deck& deck); //Update the Hand data acc to sumNbet
+	void results(Dealer& d, Deck& deck, int dealerSum, bool isPlayer); //Update the Hand data acc to sumNbet
 
 	//The turn and results with dm when ranking
-	void turn(Deck& deck, DM& dm, Card* dealer);
-	void results(Dealer& d, Deck& deck, DM& dm);
+	void turn(Deck& deck, DM& dm, Card* dealer, int bet);
 
 	//The turn and results with dm when printing output
 	void turnRanking(Deck& deck, DM& dm, Card* dealer);

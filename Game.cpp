@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "MachineLearning.h"
+#include "graphicsFuncs.h"
 
 Game::Game(int money) {
 	hand.setMoney(money);
@@ -24,14 +25,14 @@ void Game::run() {
 		cout << "\n";
 
 		//The results
-		hand.results(dealer, deck);
+		int dealerSum = dealer.play(deck, true);
+		hand.results(dealer, deck, dealerSum, true);
 
 		cout << "\n";
 	}
 
 	cout << "Game ended. Your money: " << hand.getMoney() << "\n";
 }
-
 
 void Game::run(DM& dm) {
 	int input = 0;
@@ -50,11 +51,12 @@ void Game::run(DM& dm) {
 
 		deck.shuffle();
 		dealer.newGame(deck, true);
-		hand.turn(deck, dm, dealer.reaveled());
+		hand.turn(deck, dm, dealer.reaveled(), betDM);
 		cout << "\n";
 
 		//The results
-		hand.results(dealer, deck, dm);
+		int dealerSum = dealer.play(deck, true);
+		hand.results(dealer, deck, dealerSum, false);
 
 		cout << "\n";
 	}
@@ -97,4 +99,36 @@ float Game::rankDMforCalc(DM& dm, int rep) {
 	hand.setMoney(0);
 
 	return (float) dm.getFitness() / (float)betDM / (float)rep;;
+}
+
+void Game::runGame(DM& dm) {
+	bool gameOnGoing = true;
+	Hand player; Hand AI; int bet; int dealerSum;
+	player.setMoney(hand.getMoney()); AI.setMoney(hand.getMoney());
+	while (gameOnGoing) {
+		//The game
+		printStats(player, AI);
+
+		//Prepare the game
+		deck.shuffle();
+		dealer.newGame(deck, true);
+
+		//The player's turn
+		(player.getMoney() >= 10) ? bet = 10 : bet = player.getMoney();
+		player.turn(deck, bet);
+
+		//The AI's turn
+		(AI.getMoney() >= 10) ? bet = 10 : bet = AI.getMoney();
+		AI.turn(deck, dm, dealer.reaveled(), bet);
+
+		//The results
+		dealerSum = dealer.play(deck, true);
+		player.results(dealer, deck, dealerSum, true);
+		AI.results(dealer, deck, dealerSum, false);
+
+		//isGameOver
+		if (player.getMoney() <= 0 || AI.getMoney() <= 0) gameOnGoing = false;
+	}
+
+	endGame(player.getMoney(), AI.getMoney());
 }

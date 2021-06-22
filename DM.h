@@ -52,6 +52,5 @@ public:
 
 	DM* crossover(DM* chromo);
 
-	void checkTableAlikness(int a, int b, int c, DM* father1, DM* father2);
-	float checkOffspringAlikeness(DM* father1, DM* father2);
+	void setAI();
 };

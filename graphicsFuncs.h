@@ -10,21 +10,26 @@ void loadMedia();
 void initGraphics();
 void closeGraphics();
 
+void printText(int x, int y, string input);
 void printCard(int x, int y, Card* card);
 
 //Practical Funcs
-void printStats(Hand& player, Hand& AI);
-void endGame(int playerMoney, int AIMoney);
+void printBoard();
+void newRound(int pMoney, int aiMoney);
+void endGame();
 
 void dealerNewGame(Card* reaveled);
 void dealerHand(vector<Card*>& dealer, int dealerSum);
 
 void playerHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet);
+void playerSplit();
+void playerNextHand();
 char playerMove(bool canDouble, bool canSplit);
 void playerResult(int bet, int result);
-void playerNextHandResult();
 
 void AIHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet);
+void AISplit();
+void AINextHand();
 void AIMove(char choice);
 void AIResult(int bet, int result);
-void AINextHandResult();
+

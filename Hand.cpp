@@ -67,6 +67,8 @@ void Hand::turn(Deck& deck, int bet) {
 		if (sumNbet.top()[0] < 21) choice = move(bet);
 		while (sumNbet.top()[0] < 21 && choice != 's') {
 			if (choice == 'p') {
+				playerSplit();
+
 				splitted.push(hand[1]);
 				hand.erase(hand.begin() + 1);
 				sumNbet.top()[0] -= splitted.top()->getValue();
@@ -98,6 +100,7 @@ void Hand::turn(Deck& deck, int bet) {
 			hand.push_back(splitted.top());
 			array<int, 2> temp = { splitted.top()->getValue(), sumNbet.top()[1] };
 			sumNbet.push(temp);
+			playerNextHand();
 			draw(deck);
 		}
 	}
@@ -113,15 +116,10 @@ void Hand::results(Dealer& d, Deck& deck, int dealerSum, bool isPlayer) {
 		return;
 	}
 
-	int profits; int sum; int bet; bool moveToNextHand = false;
+	int profits; int sum; int bet;
 
 	while (!sumNbet.empty()) {
-		if (moveToNextHand) {
-			if (isPlayer) playerNextHandResult();
-			else AINextHandResult();
-		}
-		else moveToNextHand = true;
-
+	
 		sum = sumNbet.top()[0]; bet = sumNbet.top()[1];
 		if (sum > 21) {
 			if (isPlayer) playerResult(bet, 0);
@@ -197,6 +195,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, int bet) {
 				while (canSplit) {
 					//Initiate split
 					AIMove('p');
+					AISplit();
 					money -= bet;
 
 					splitted.push(hand[1]);
@@ -250,6 +249,8 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, int bet) {
 			hand.push_back(splitted.top());
 			array<int, 2> temp = { splitted.top()->getValue(), sumNbet.top()[1] };
 			sumNbet.push(temp);
+
+			AINextHand();
 
 			draw(deck);
 		}

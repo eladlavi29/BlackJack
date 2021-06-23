@@ -6,11 +6,13 @@
 //Technical
 //Data
 //Images size and placements
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 880;
+const int SCREEN_WIDTH = 1440;
+const int SCREEN_HEIGHT = 1000;
 
 const int CARD_WIDTH = 200;
 const int CARD_HEIGHT = 280;
+
+const int delayOfPrint = 2000;
 
 SDL_Rect dealerHandGrid; //()
 SDL_Rect playerHandGrid; //()
@@ -26,9 +28,12 @@ SDL_Surface* gScreenSurface;
 SDL_Rect dest;
 int change;
 
+//The text tools
+SDL_Surface* text;
+TTF_Font* font;
+
 //Images
 SDL_Surface* background_image;
-SDL_Surface* cover_grid;
 SDL_Surface* card_back;
 SDL_Surface* cardsImages[52];
 
@@ -42,12 +47,10 @@ void loadMedia() {
 
 	//Images
 	background_image = SDL_LoadBMP("Images/blackjack_background.bmp");
-	cover_grid = SDL_LoadBMP("Images/cover.bmp");
 	card_back = SDL_LoadBMP("Images/card_back.bmp");
 
 	//Optimize images' upload by formating them
 	background_image = SDL_ConvertSurface(background_image, gScreenSurface->format, 0);
-	cover_grid = SDL_ConvertSurface(cover_grid, gScreenSurface->format, 0);
 	card_back = SDL_ConvertSurface(card_back, gScreenSurface->format, 0);
 
 	//Load and optimization of all cards
@@ -61,6 +64,9 @@ void loadMedia() {
 		}
 	}
 
+	//Font
+	font = TTF_OpenFont("font.ttf", 48);
+
 	//Grid definition
 	dealerHandGrid.h = CARD_HEIGHT; dealerHandGrid.w = CARD_WIDTH * 3; dealerHandGrid.x = SCREEN_WIDTH / 2 - dealerHandGrid.w / 2; dealerHandGrid.y = SCREEN_HEIGHT / 5 - dealerHandGrid.h / 2;//()
 	playerHandGrid.h = CARD_HEIGHT; playerHandGrid.w = CARD_WIDTH * 3; playerHandGrid.x = SCREEN_WIDTH * 3 / 4 - playerHandGrid.w / 2; playerHandGrid.y = SCREEN_HEIGHT * 4 / 5 - playerHandGrid.h / 2;//()
@@ -73,15 +79,16 @@ void initGraphics(){
 	//Get window surface
 	gScreenSurface = SDL_GetWindowSurface(gWindow);
 
+	//Init SDL ttf
+	TTF_Init();
+
 	loadMedia();
 }
 void closeGraphics() {
 	//Deallocate surface and images
 	SDL_FreeSurface(background_image);
-	SDL_FreeSurface(cover_grid);
 	SDL_FreeSurface(card_back);
 	background_image = NULL;
-	cover_grid = NULL;
 	card_back = NULL;
 
 	for (int i = 0; i < 52; ++i) {
@@ -93,36 +100,98 @@ void closeGraphics() {
 	SDL_DestroyWindow(gWindow);
 	gWindow = NULL;
 
+	//Destroy text tools
+	TTF_CloseFont(font);
+
 	//Quit SDL subsystems
+	TTF_Quit();
 	SDL_Quit();
 }
 
+SDL_Color color = { 0, 0, 0 };
+void printText(int x, int y, string input) {
+	text = TTF_RenderText_Solid(font, input.c_str(), color);
+	dest.x = x; dest.y = y;
+	SDL_BlitSurface(text, NULL, gScreenSurface, &dest);
+}
 void printCard(int x, int y, Card* card) {
+	if (card->getValue() == -1) return;
 	dest.x = x; dest.y = y; dest.w = CARD_WIDTH; dest.h = CARD_HEIGHT;
-	SDL_BlitScaled(cardsImages[card->cardIndex()], NULL, gScreenSurface, &dest);
+	int cardIndex = card->cardIndex();
+	SDL_BlitScaled(cardsImages[cardIndex], NULL, gScreenSurface, &dest);
 }
 
 //Practical
 //General
-void printStats(Hand& player, Hand& AI) {
+//DATA
+int playerMoney;
+int AIMoney;
+vector<Card*> dealer_hand;
+vector<Card*> player_hand; int indPlayer; //Split- empty Card, sub ind to 0
+vector<Card*> AI_hand; int indAI;
+
+//Funcs
+int delay;
+void printBoard() {
 	//Apply the background image
 	dest.x = 0; dest.y = 0;
 	dest.w = SCREEN_WIDTH; dest.h = SCREEN_HEIGHT;
 	SDL_BlitScaled(background_image, NULL, gScreenSurface, &dest);
-	
+
+	//Apply the dealerHand
+	int x = dealerHandGrid.x - CARD_WIDTH / 2; int y = dealerHandGrid.y;
+	int change;
+	if (dealer_hand.size() == 1) {
+		change = dealerHandGrid.w / (2 + 1);
+		x += change;
+		printCard(x, y, dealer_hand[0]);
+
+		x += change;
+		dest.x = x; dest.y = y; dest.h = CARD_HEIGHT; dest.w = CARD_WIDTH;
+		SDL_BlitScaled(card_back, NULL, gScreenSurface, &dest);
+	}
+	else {
+		change = dealerHandGrid.w / (dealer_hand.size() + 1);
+		for (int i = 0; i < dealer_hand.size(); ++i) {
+			x += change;
+			printCard(x, y, dealer_hand[i]);
+		}
+	}
+
+	//Apply the player Hand
+	x = playerHandGrid.x - CARD_WIDTH / 2; y = playerHandGrid.y;
+	change = playerHandGrid.w / (player_hand.size() + 1);
+	for (int i = 0; i < player_hand.size(); ++i) {
+		x += change;
+		printCard(x, y, player_hand[i]);
+	}
+
+	//Apply the AI Hand
+	x = AIHandGrid.x - CARD_WIDTH / 2; y = AIHandGrid.y;
+	change = AIHandGrid.w / (AI_hand.size() + 1);
+	for (int i = 0; i < AI_hand.size(); ++i) {
+		x += change;
+		printCard(x, y, AI_hand[i]);
+	}
+
+	string st = "Hello world";
+	printText(0, 0, st);
+
 	//money
-	
+
 	//Update the surface
 	SDL_UpdateWindowSurface(gWindow);
-	SDL_Delay(2000);
-
-	//Text
-	cout << "The player's money: " << player.getMoney() << "\n";
-	cout << "The AI's money: " << AI.getMoney() << "\n";
-	cout << "\n";
 }
+void newRound(int pMoney, int aiMoney) {
+	AIMoney = aiMoney;
 
-void endGame(int playerMoney, int AIMoney) {
+	dealer_hand.clear();
+	player_hand.clear(); indPlayer = 0;
+	AI_hand.clear(); indAI = 0;
+
+	printBoard();
+}
+void endGame() {
 	//Game ended window
 	
 	//Text
@@ -130,46 +199,21 @@ void endGame(int playerMoney, int AIMoney) {
 }
 
 //Dealer
-void dealerNewGame(Card* reaveled) {
-	SDL_BlitScaled(cover_grid, NULL, gScreenSurface, &dealerHandGrid);
-	
-	int x = dealerHandGrid.x - CARD_WIDTH / 2; int y = dealerHandGrid.y;
-	change = dealerHandGrid.w / (2 + 1);
-	x += change;
-	printCard(x, y, reaveled);
+void dealerNewGame(Card* reaveled) {	
+	dealer_hand.push_back(reaveled);
+	printBoard();
+	SDL_Delay(delayOfPrint);
 
-	//Update the surface
-	SDL_UpdateWindowSurface(gWindow);
-	SDL_Delay(2000);
-
-	x += change;
-	dest.x = x; dest.y = y; dest.h = CARD_HEIGHT; dest.w = CARD_WIDTH;
-	SDL_BlitScaled(card_back, NULL, gScreenSurface, &dest);
-
-	//Update the surface
-	SDL_UpdateWindowSurface(gWindow);
-	SDL_Delay(2000);
-
-	/*dest.x = dealerHandGrid.x; dest.y = dealerHandGrid.y; dest.h = CARD_HEIGHT;
-	change = dealerHandGrid.w / (2 + 1);
-	for (int i = 0; i < 2; ++i) {
-
-	}*/
 	//Text
 	cout << "The dealer's revealed card is " << reaveled->toString() << "\n";
 }
 
 void dealerHand(vector<Card*>& dealer, int dealerSum) {
-	SDL_BlitScaled(cover_grid, NULL, gScreenSurface, &dealerHandGrid);
-
-	int x = dealerHandGrid.x - CARD_WIDTH / 2; int y = dealerHandGrid.y;
-	change = dealerHandGrid.w / (dealer.size() + 1);
-	for (int i = 0; i < dealer.size(); ++i) {
-		x += change;
-		printCard(x, y, dealer[i]);
-		//Update the surface
-		SDL_UpdateWindowSurface(gWindow);
-		SDL_Delay(2000);
+	int ind = 1; //The first card is already inside
+	for (; ind < dealer.size(); ++ind) {
+		dealer_hand.push_back(dealer[ind]);
+		printBoard();
+		SDL_Delay(delayOfPrint);
 	}
 
 	//Text
@@ -181,20 +225,11 @@ void dealerHand(vector<Card*>& dealer, int dealerSum) {
 	cout << "This hand sum is: " << dealerSum << "\n\n";
 }
 
-
 //Player
 void playerHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet) {
-	SDL_BlitScaled(cover_grid, NULL, gScreenSurface, &playerHandGrid);
-
-	int x = playerHandGrid.x - CARD_WIDTH / 2; int y = playerHandGrid.y;
-	change = playerHandGrid.w / (hand.size() + 1);
-	for (int i = 0; i < hand.size(); ++i) {
-		x += change;
-		printCard(x, y, hand[i]);
-	}
-
-	//Update the surface
-	SDL_UpdateWindowSurface(gWindow);
+	for (; indPlayer < hand.size(); ++indPlayer)
+		player_hand.push_back(hand[indPlayer]);
+	printBoard();
 
 	//Text
 	cout << "Current hand: ";
@@ -203,6 +238,16 @@ void playerHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet) {
 	}
 	cout << "\n";
 	cout << "This hand sum is: " << sumNbet.top()[0] << "\n\n";
+}
+
+void playerSplit() {
+	indPlayer = 1;
+	player_hand.erase(player_hand.begin() + player_hand.size() - 1);
+}
+
+void playerNextHand() {
+	indPlayer = 0;
+	player_hand.push_back(new Card(-1, '0'));
 }
 
 char playerMove(bool canDouble, bool canSplit) {
@@ -242,24 +287,13 @@ void playerResult(int bet, int result) {
 		cout << "Player didn't win or lose\n";
 }
 
-void playerNextHandResult() {
-	//Move to the next Splitted hand
-}
-
 //AI
 void AIHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet) {
-	SDL_BlitScaled(cover_grid, NULL, gScreenSurface, &AIHandGrid);
-
-	int x = AIHandGrid.x - CARD_WIDTH / 2; int y = AIHandGrid.y;
-	change = AIHandGrid.w / (hand.size() + 1);
-	for (int i = 0; i < hand.size(); ++i) {
-		x += change;
-		printCard(x, y, hand[i]);
+	for (; indAI < hand.size(); ++indAI) {
+		AI_hand.push_back(hand[indAI]);
+		printBoard();
+		SDL_Delay(delayOfPrint);
 	}
-
-	//Update the surface
-	SDL_UpdateWindowSurface(gWindow);
-	SDL_Delay(2000);
 
 	//Text
 	cout << "Current hand: ";
@@ -268,6 +302,16 @@ void AIHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet) {
 	}
 	cout << "\n";
 	cout << "This hand sum is: " << sumNbet.top()[0] << "\n\n";
+}
+
+void AISplit() {
+	indAI = 1;
+	AI_hand.erase(AI_hand.begin() + AI_hand.size() - 1);
+}
+
+void AINextHand() {
+	indAI = 0;
+	AI_hand.push_back(new Card(-1, '0'));
 }
 
 void AIMove(char choice) {
@@ -288,6 +332,3 @@ void AIResult(int bet, int result) {
 		cout << "AI didn't win or lose\n";
 }
 
-void AINextHandResult() {
-	//Move to the next Splitted hand
-}

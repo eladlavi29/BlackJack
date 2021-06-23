@@ -107,7 +107,7 @@ void Game::runGame(DM& dm) {
 	player.setMoney(hand.getMoney()); AI.setMoney(hand.getMoney());
 	while (gameOnGoing) {
 		//The game
-		printStats(player, AI);
+		newRound(hand.getMoney(), AI.getMoney());
 
 		//Prepare the game
 		deck.shuffle();
@@ -130,5 +130,5 @@ void Game::runGame(DM& dm) {
 		if (player.getMoney() <= 0 || AI.getMoney() <= 0) gameOnGoing = false;
 	}
 
-	endGame(player.getMoney(), AI.getMoney());
+	endGame();
 }

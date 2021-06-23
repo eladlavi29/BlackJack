@@ -6,19 +6,17 @@
 using namespace std;
 
 int main(int argc, char* args[]) {
-	TTF_Init();
+	//Set the Game
+	DM* ultimateDM = new DM(); Game game(100); 
+	ultimateDM->setAI();
 
-	////Set the Game
-	//DM* ultimateDM = new DM(); Game game(100); 
-	//ultimateDM->setAI();
+	//Set the graphics
+	initGraphics();
 
-	////Set the graphics
-	//initGraphics();
+	game.runGame(*ultimateDM);
 
-	//game.runGame(*ultimateDM);
-
-	////Close Game
-	//closeGraphics();
+	//Close Game
+	closeGraphics();
 
 	return 0;
 }

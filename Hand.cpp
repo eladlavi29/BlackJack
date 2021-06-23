@@ -42,13 +42,13 @@ void Hand::turn(Deck& deck, int bet) {
 	draw(deck);	draw(deck);
 
 	if (sumNbet.top()[0] == 21) {
-		playerHand(hand, sumNbet);
+		playerHand(hand, sumNbet, money);
 
 		blackjack = true;
 		deck.throwCards(hand);
 		ace = 0;
 
-		playerResult(bet, 2);
+		playerResult(bet, 2, money);
 
 		return;
 	}
@@ -61,7 +61,7 @@ void Hand::turn(Deck& deck, int bet) {
 	while (!splitted.empty()) {
 		splitted.pop();
 
-		playerHand(hand, sumNbet);
+		playerHand(hand, sumNbet, money);
 
 		//The first move is seperated to optimize the code (to know if the player has standed)
 		if (sumNbet.top()[0] < 21) choice = move(bet);
@@ -81,13 +81,13 @@ void Hand::turn(Deck& deck, int bet) {
 				sumNbet.top()[1] += sumNbet.top()[1];
 				draw(deck);
 
-				playerHand(hand, sumNbet);
+				playerHand(hand, sumNbet, money);
 
 				break;
 			}
 			draw(deck);
 
-			playerHand(hand, sumNbet);
+			playerHand(hand, sumNbet, money);
 
 			if (sumNbet.top()[0] < 21) choice = move(bet); //Text
 		}
@@ -122,25 +122,25 @@ void Hand::results(Dealer& d, Deck& deck, int dealerSum, bool isPlayer) {
 	
 		sum = sumNbet.top()[0]; bet = sumNbet.top()[1];
 		if (sum > 21) {
-			if (isPlayer) playerResult(bet, 0);
-			else AIResult(bet, 0);
+			if (isPlayer) playerResult(bet, 0, money);
+			else AIResult(bet, 0, money);
 			sumNbet.pop();
 			continue;
 		}
 
 		if (sum < dealerSum) {
-			if (isPlayer) playerResult(bet, 0);
-			else AIResult(bet, 0);
+			if (isPlayer) playerResult(bet, 0, money);
+			else AIResult(bet, 0, money);
 		}
 		else if (sum > dealerSum) {
 			money += 2 * bet;
-			if (isPlayer) playerResult(bet, 2);
-			else AIResult(bet, 2);
+			if (isPlayer) playerResult(bet, 2, money);
+			else AIResult(bet, 2, money);
 		}
 		else {
 			money += bet;
-			if (isPlayer) playerResult(bet, 1);
-			else AIResult(bet, 1);
+			if (isPlayer) playerResult(bet, 1, money);
+			else AIResult(bet, 1, money);
 		}
 
 		sumNbet.pop();
@@ -158,14 +158,14 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, int bet) {
 	//Check for Blackjack
 	if (sumNbet.top()[0] == 21) {
 
-		AIHand(hand, sumNbet);
+		AIHand(hand, sumNbet, money);
 
 		blackjack = true;
 		deck.throwCards(hand);
 
 		ace = 0;
 
-		AIResult(bet, 2);
+		AIResult(bet, 2, money);
 
 		return;
 	}
@@ -180,7 +180,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, int bet) {
 	while (!splitted.empty()) {
 		splitted.pop();
 
-		AIHand(hand, sumNbet);
+		AIHand(hand, sumNbet, money);
 
 		//If already declared it doesn't want to split then don't check this possibility again
 		if (wantSplit != false) {
@@ -205,7 +205,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, int bet) {
 					if (splitted.top()->getValue() == 11) sumNbet.top()[0] += 10;
 
 					draw(deck);
-					AIHand(hand, sumNbet);
+					AIHand(hand, sumNbet, money);
 
 					canSplit = hand[0]->getValue() == hand[1]->getValue();
 				}
@@ -225,14 +225,14 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer, int bet) {
 			sumNbet.top()[1] += bet;
 			draw(deck);
 
-			AIHand(hand, sumNbet);
+			AIHand(hand, sumNbet, money);
 		}
 		//Hitting loop
 		else {
 			while (sumNbet.top()[0] < 21 && choice != 's') {
 				draw(deck);
 
-				AIHand(hand, sumNbet);
+				AIHand(hand, sumNbet, money);
 
 				if (sumNbet.top()[0] < 21) {
 					choice = dm.decideReg(sumNbet.top()[0], dealer->getValue(), false, ace > 0);

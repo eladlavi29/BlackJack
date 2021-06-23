@@ -7,10 +7,10 @@
 //Data
 //Images size and placements
 const int SCREEN_WIDTH = 1440;
-const int SCREEN_HEIGHT = 1000;
+const int SCREEN_HEIGHT = 1080;
 
-const int CARD_WIDTH = 200;
-const int CARD_HEIGHT = 280;
+const int CARD_WIDTH = 160;
+const int CARD_HEIGHT = 220;
 
 const int delayOfPrint = 2000;
 
@@ -31,6 +31,7 @@ int change;
 //The text tools
 SDL_Surface* text;
 TTF_Font* font;
+string st;
 
 //Images
 SDL_Surface* background_image;
@@ -65,7 +66,7 @@ void loadMedia() {
 	}
 
 	//Font
-	font = TTF_OpenFont("font.ttf", 48);
+	font = TTF_OpenFont("font.ttf", 36);
 
 	//Grid definition
 	dealerHandGrid.h = CARD_HEIGHT; dealerHandGrid.w = CARD_WIDTH * 3; dealerHandGrid.x = SCREEN_WIDTH / 2 - dealerHandGrid.w / 2; dealerHandGrid.y = SCREEN_HEIGHT / 5 - dealerHandGrid.h / 2;//()
@@ -126,9 +127,9 @@ void printCard(int x, int y, Card* card) {
 //DATA
 int playerMoney;
 int AIMoney;
-vector<Card*> dealer_hand;
-vector<Card*> player_hand; int indPlayer; //Split- empty Card, sub ind to 0
-vector<Card*> AI_hand; int indAI;
+vector<Card*> dealer_hand; int dealerSum;
+vector<Card*> player_hand; int indPlayer; int playerSum;
+vector<Card*> AI_hand; int indAI; int AISum;
 
 //Funcs
 int delay;
@@ -157,6 +158,11 @@ void printBoard() {
 			printCard(x, y, dealer_hand[i]);
 		}
 	}
+	//Apply the dealer's hand sum
+	if (!dealerSum == 0) {
+		st = "Total: " + to_string(dealerSum);
+		printText(dealerHandGrid.x + dealerHandGrid.w / 3, dealerHandGrid.y + dealerHandGrid.h + 10, st);
+	}
 
 	//Apply the player Hand
 	x = playerHandGrid.x - CARD_WIDTH / 2; y = playerHandGrid.y;
@@ -165,6 +171,14 @@ void printBoard() {
 		x += change;
 		printCard(x, y, player_hand[i]);
 	}
+	//Apply the player's hand sum
+	if (!playerSum == 0) {
+		st = "Total: " + to_string(playerSum);
+		printText(playerHandGrid.x + playerHandGrid.w / 3, playerHandGrid.y + playerHandGrid.h + 10, st);
+	}
+	//Apply the player's money
+	st = to_string(playerMoney);
+	printText(SCREEN_WIDTH * 84 / 100, SCREEN_HEIGHT * 15 / 100, st);
 
 	//Apply the AI Hand
 	x = AIHandGrid.x - CARD_WIDTH / 2; y = AIHandGrid.y;
@@ -173,21 +187,25 @@ void printBoard() {
 		x += change;
 		printCard(x, y, AI_hand[i]);
 	}
-
-	string st = "Hello world";
-	printText(0, 0, st);
-
-	//money
+	//Apply the AI's hand sum
+	if (!AISum == 0) {
+		st = "Total: " + to_string(AISum);
+		printText(AIHandGrid.x + AIHandGrid.w / 3, AIHandGrid.y + AIHandGrid.h + 10, st);
+	}
+	//Apply the AI's money
+	st = to_string(AIMoney);
+	printText(SCREEN_WIDTH * 13 / 100, SCREEN_HEIGHT * 15 / 100, st);
 
 	//Update the surface
 	SDL_UpdateWindowSurface(gWindow);
 }
 void newRound(int pMoney, int aiMoney) {
+	playerMoney = pMoney;
 	AIMoney = aiMoney;
 
-	dealer_hand.clear();
-	player_hand.clear(); indPlayer = 0;
-	AI_hand.clear(); indAI = 0;
+	dealer_hand.clear(); dealerSum = 0;
+	player_hand.clear(); indPlayer = 0; playerSum = 0;
+	AI_hand.clear(); indAI = 0; AISum = 0;
 
 	printBoard();
 }
@@ -199,7 +217,9 @@ void endGame() {
 }
 
 //Dealer
-void dealerNewGame(Card* reaveled) {	
+void dealerNewGame(Card* reaveled) {
+	dealerSum = reaveled->getValue();
+
 	dealer_hand.push_back(reaveled);
 	printBoard();
 	SDL_Delay(delayOfPrint);
@@ -208,10 +228,11 @@ void dealerNewGame(Card* reaveled) {
 	cout << "The dealer's revealed card is " << reaveled->toString() << "\n";
 }
 
-void dealerHand(vector<Card*>& dealer, int dealerSum) {
+void dealerHand(vector<Card*>& dealer, int sum) {
 	int ind = 1; //The first card is already inside
 	for (; ind < dealer.size(); ++ind) {
 		dealer_hand.push_back(dealer[ind]);
+		dealerSum += dealer[ind]->getValue();
 		printBoard();
 		SDL_Delay(delayOfPrint);
 	}
@@ -222,13 +243,17 @@ void dealerHand(vector<Card*>& dealer, int dealerSum) {
 		cout << x->toString() << " ";
 	}
 	cout << "\n";
-	cout << "This hand sum is: " << dealerSum << "\n\n";
+	cout << "This hand sum is: " << sum << "\n\n";
 }
 
 //Player
-void playerHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet) {
+void playerHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet, int money) {
 	for (; indPlayer < hand.size(); ++indPlayer)
 		player_hand.push_back(hand[indPlayer]);
+
+	playerMoney = money;
+	playerSum = sumNbet.top()[0];
+
 	printBoard();
 
 	//Text
@@ -273,8 +298,8 @@ char playerMove(bool canDouble, bool canSplit) {
 	return choice;
 }
 
-void playerResult(int bet, int result) {
-
+void playerResult(int bet, int result, int money) {
+	playerMoney = money;
 	SDL_Delay(2000);
 
 	//result 0 lost, 1 tied, 2 won
@@ -288,7 +313,10 @@ void playerResult(int bet, int result) {
 }
 
 //AI
-void AIHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet) {
+void AIHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet, int money) {
+	AIMoney = money;
+	AISum = sumNbet.top()[0];
+
 	for (; indAI < hand.size(); ++indAI) {
 		AI_hand.push_back(hand[indAI]);
 		printBoard();
@@ -319,7 +347,8 @@ void AIMove(char choice) {
 	cout << "The computer has chosen to " << choice << "\n";
 }
 
-void AIResult(int bet, int result) {
+void AIResult(int bet, int result, int money) {
+	AIMoney = money;
 	SDL_Delay(2000);
 
 	//result 0 lost, 1 tied, 2 won

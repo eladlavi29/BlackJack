@@ -21,15 +21,15 @@ void endGame();
 void dealerNewGame(Card* reaveled);
 void dealerHand(vector<Card*>& dealer, int dealerSum);
 
-void playerHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet);
+void playerHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet, int money);
 void playerSplit();
 void playerNextHand();
 char playerMove(bool canDouble, bool canSplit);
-void playerResult(int bet, int result);
+void playerResult(int bet, int result, int money);
 
-void AIHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet);
+void AIHand(vector<Card*>& hand, stack<array<int, 2>>& sumNbet, int money);
 void AISplit();
 void AINextHand();
 void AIMove(char choice);
-void AIResult(int bet, int result);
+void AIResult(int bet, int result, int money);
 

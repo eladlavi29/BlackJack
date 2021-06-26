@@ -64,14 +64,13 @@ void DM::copy(DM* copy) {
 
 void DM::printTable(int ind, const int& num1, const int& num2) {
 	for (int j = num2 - 1; j >= 0; --j) {
-		for (int i = num1 - 1; i >= 0; --i) {
+		for (int i = 0; i < num1; ++i) {
 			cout << dm[ind][i][j] << " ";
 		}
 		cout << "\n";
 	}
 	cout << "\n";
 }
-
 void DM::printData() {
 	printTable(0, dealer, hard);
 	printTable(1, dealer, soft);
@@ -184,23 +183,27 @@ DM* DM::crossover(DM* chromo) {
 	return offspring;
 }
 
-float fitsFather1, fitsFather2;
-void DM::checkTableAlikness(int a, int b, int c, DM* father1, DM* father2) {
-	for (int i = 0; i < b; ++i) {
-		for (int j = 0; j < c; ++j) {
-			if (getMove(a, i, j) == father1->getMove(a, i, j)) ++fitsFather1;
-			if (getMove(a, i, j) == father2->getMove(a, i, j)) ++fitsFather2;
+string AI = "sssssssssssssssssssssssssssssshsssssssssshhshsssssshsshsssssshhhhssshshhshhhssshhhhhhsssshhddhddddddhhhhddddddhhhdhhhddhshhhhdddhhhhsdhhdhhshhdsshddshhhsssdsdshhhhshhhhssdssdsdshdhhssssdsdhshsssdssshhhhdsssddhdshdhhdsssshhhddhhdssshhdhdhssdhhhdhdhhdhshsddhdshdnnnpnnnnpnppppppnnpnnnnpnnpppnnnnppnppnnppppnpnpppnnnppnnnnnppnppppnpnpnnpppnnnpnpnnpnpnppnnpnnpnpnn";
+void DM::setAI() {
+	int geneNumber = 0;
+	for (int j = hard - 1; j >= 0; --j) {
+		for (int i = dealer - 1; i >= 0; --i) {
+			setMove(0, i, j, AI[geneNumber]);
+			++geneNumber;
 		}
 	}
-}
-float DM::checkOffspringAlikeness(DM* father1, DM* father2) {
-	fitsFather1 = 0; fitsFather2 = 0;
 
-	checkTableAlikness(0, dealer, hard, father1, father2);
-	checkTableAlikness(1, dealer, soft, father1, father2);
-	checkTableAlikness(2, dealer, pairs, father1, father2);
+	for (int j = soft - 1; j >= 0; --j) {
+		for (int i = dealer - 1; i >= 0; --i) {
+			setMove(1, i, j, AI[geneNumber]);
+			++geneNumber;
+		}
+	}
 
-	float totalCells = (float)(dealer * (hard + soft + pairs));
-
-	return ((fitsFather1 / totalCells) / (fitsFather2 / totalCells));
+	for (int j = pairs - 1; j >= 0; --j) {
+		for (int i = dealer - 1; i >= 0; --i) {
+			setMove(2, i, j, AI[geneNumber]);
+			++geneNumber;
+		}
+	}
 }

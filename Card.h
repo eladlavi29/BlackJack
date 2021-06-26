@@ -19,7 +19,11 @@ public:
 	bool isAce();
 
 	string toString();
+
+	//Get the card Index (as defined in graphicsFuncs)
+	int cardIndex();
 };
+const char cardTypes[] = { 'c', 'd', 'h', 's' };
 
 //The object Deck
 class Deck {

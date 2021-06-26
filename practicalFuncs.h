@@ -1,4 +1,4 @@
-#pragma onceint something();
+#pragma once
 
 void useLiveTextInConsoleExample();
 

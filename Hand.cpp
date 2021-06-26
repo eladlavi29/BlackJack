@@ -1,7 +1,5 @@
-#include <iostream>
-#include <sstream>
-
 #include "Hand.h"
+#include "graphicsFuncs.h"
 using namespace std;
 
 Hand::Hand() :money(0), ace(0), blackjack(false) {}
@@ -9,21 +7,14 @@ Hand::Hand() :money(0), ace(0), blackjack(false) {}
 void Hand::setMoney(int money) { this->money = money; }
 int Hand::getMoney() { return money; };
 
-void Hand::printHand() {
-	cout << "Current hand: ";
-	for (auto x : hand) {
-		cout << x->toString() << " ";
-	}
-	cout << "\n";
-	cout << "This hand sum is: " << sumNbet.top()[0] << "\n";
+vector<Card*> Hand::getCards() {
+	return this->hand;
 }
 
 Card* temp;
 void Hand::draw(Deck& deck) {
 	temp = deck.draw();
 	hand.push_back(temp);
-
-	//cout << temp->toString() << "\n";
 
 	sumNbet.top()[0] += temp->getValue();
 	if (temp->isAce()) ace++;
@@ -35,44 +26,29 @@ void Hand::draw(Deck& deck) {
 }
 
 char Hand::move(int bet) {
-	stringstream output;
-	output << "Press s for stand or h for hit ";
 
 	bool firstMove = hand.size() == 2;
-	//if can Double add option
 	bool canDouble = firstMove && money >= bet;
-	if (canDouble) {
-		output << "or d for double ";
-	}
-
-	//If can split add option
 	bool canSplit = firstMove && hand[0]->getValue() == hand[1]->getValue() && money >= bet;
-	if (canSplit) output << "or p for split ";
 
-	//Print options
-	cout << output.str() << "\n";
-
-	char choice;
-	cin >> choice;
-
-	return choice;
+	return playerMove(canDouble, canSplit);
 }
 
 void Hand::turn(Deck& deck, int bet) {
-	//Draw strating hand
-	money -= bet; ace = 0;
-
 	array<int, 2> temp = { 0, bet };
-	sumNbet.push(temp);
+	sumNbet.push(temp); money -= bet;
 
+	ace = 0;
 	draw(deck);	draw(deck);
 
 	if (sumNbet.top()[0] == 21) {
-		printHand();
+		playerHand(hand, sumNbet, money);
 
 		blackjack = true;
 		deck.throwCards(hand);
 		ace = 0;
+
+		playerBlackjack(money);
 
 		return;
 	}
@@ -85,12 +61,14 @@ void Hand::turn(Deck& deck, int bet) {
 	while (!splitted.empty()) {
 		splitted.pop();
 
-		printHand();
+		playerHand(hand, sumNbet, money);
 
 		//The first move is seperated to optimize the code (to know if the player has standed)
 		if (sumNbet.top()[0] < 21) choice = move(bet);
 		while (sumNbet.top()[0] < 21 && choice != 's') {
 			if (choice == 'p') {
+				playerSplit();
+
 				splitted.push(hand[1]);
 				hand.erase(hand.begin() + 1);
 				sumNbet.top()[0] -= splitted.top()->getValue();
@@ -103,15 +81,15 @@ void Hand::turn(Deck& deck, int bet) {
 				sumNbet.top()[1] += sumNbet.top()[1];
 				draw(deck);
 
-				printHand();
+				playerHand(hand, sumNbet, money);
 
 				break;
 			}
 			draw(deck);
 
-			printHand();
+			playerHand(hand, sumNbet, money);
 
-			if (sumNbet.top()[0] < 21) choice = move(bet);
+			if (sumNbet.top()[0] < 21) choice = move(bet); //Text
 		}
 
 		deck.throwCards(hand);
@@ -122,78 +100,73 @@ void Hand::turn(Deck& deck, int bet) {
 			hand.push_back(splitted.top());
 			array<int, 2> temp = { splitted.top()->getValue(), sumNbet.top()[1] };
 			sumNbet.push(temp);
-			cout << "\n";
+			playerNextHand();
 			draw(deck);
 		}
 	}
 }
 
-void Hand::results(Dealer& d, Deck& deck) {
+void Hand::results(int dealerSum, bool isPlayer) {
 	if (blackjack) {
-		cout << "Balckjack!!! \n";
-
 		blackjack = false;
 		money += sumNbet.top()[1] * 15 / 10;
 
-		cout << "Hand number 1 has won " << sumNbet.top()[1] << " \n";
 		sumNbet.pop();
 
 		return;
 	}
 
-	int profits; int count = 1; int sum; int bet;
-	int dealer = -1;
+	int profits; int sum; int bet;
 
 	while (!sumNbet.empty()) {
+	
 		sum = sumNbet.top()[0]; bet = sumNbet.top()[1];
 		if (sum > 21) {
-			cout << "Hand number " << count << " has lost " << bet << "\n";
-			count++;
+			if (isPlayer) playerResult(bet, 0, money);
+			else AIResult(bet, 0, money);
 			sumNbet.pop();
 			continue;
 		}
 
-		if (dealer == -1) {
-			dealer = d.play(deck, true);
+		if (sum < dealerSum) {
+			if (isPlayer) playerResult(bet, 0, money);
+			else AIResult(bet, 0, money);
 		}
-
-		cout << "Hand number " << count << " has ";
-		if (sum < dealer) {
-			cout << "lost " << bet << "\n";
-		}
-		else if (sum > dealer) {
+		else if (sum > dealerSum) {
 			money += 2 * bet;
-			cout << "won " << bet << "\n";
+			if (isPlayer) playerResult(bet, 2, money);
+			else AIResult(bet, 2, money);
 		}
 		else {
 			money += bet;
-			cout << "not won or lost \n";
+			if (isPlayer) playerResult(bet, 1, money);
+			else AIResult(bet, 1, money);
 		}
 
-		count++;
 		sumNbet.pop();
 	}
 }
 
 
-void Hand::turn(Deck& deck, DM& dm, Card* dealer) {
-	//Draw strating hand
-	money -= betDM; ace = 0;
+void Hand::turn(Deck& deck, DM& dm, Card* dealer, int bet) {
+	array<int, 2> temp = { 0, bet };
+	sumNbet.push(temp); money -= bet;
 
-	array<int, 2> temp = { 0, betDM };
-	sumNbet.push(temp);
-
-	draw(deck); draw(deck);
+	ace = 0;
+	draw(deck);	draw(deck);
 
 	//Check for Blackjack
 	if (sumNbet.top()[0] == 21) {
 
-		printHand();
+		AIHand(hand, sumNbet, money);
 
 		blackjack = true;
 		deck.throwCards(hand);
 
 		ace = 0;
+
+		AIBlackjack(money);
+
 
 		return;
 	}
@@ -208,8 +181,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer) {
 	while (!splitted.empty()) {
 		splitted.pop();
 
-		printHand();
-		cout << "\n";
+		AIHand(hand, sumNbet, money);
 
 		//If already declared it doesn't want to split then don't check this possibility again
 		if (wantSplit != false) {
@@ -223,8 +195,9 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer) {
 			if (wantSplit == true) {
 				while (canSplit) {
 					//Initiate split
-					cout << "The computer has chosen to p \n";
-					money -= betDM;
+					AIMove('p');
+					AISplit();
+					money -= bet;
 
 					splitted.push(hand[1]);
 					hand.erase(hand.begin() + 1);
@@ -233,7 +206,7 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer) {
 					if (splitted.top()->getValue() == 11) sumNbet.top()[0] += 10;
 
 					draw(deck);
-					printHand();
+					AIHand(hand, sumNbet, money);
 
 					canSplit = hand[0]->getValue() == hand[1]->getValue();
 				}
@@ -243,30 +216,28 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer) {
 		//The first move is seperated to optimize the code
 		if (sumNbet.top()[0] < 21) {
 			choice = dm.decideReg(sumNbet.top()[0], dealer->getValue(), true, ace > 0);
-			cout << "The computer has chosen to " << choice << "\n";
+			AIMove(choice);
 		}
 		//Double scenario
 		if (sumNbet.top()[0] < 21 && choice == 'd') {
 
-			money -= betDM;
+			money -= bet;
 
-			sumNbet.top()[1] += betDM;
+			sumNbet.top()[1] += bet;
 			draw(deck);
 
-			printHand();
-			cout << "\n";
+			AIHand(hand, sumNbet, money);
 		}
 		//Hitting loop
 		else {
 			while (sumNbet.top()[0] < 21 && choice != 's') {
 				draw(deck);
 
-				printHand();
-				cout << "\n";
+				AIHand(hand, sumNbet, money);
 
 				if (sumNbet.top()[0] < 21) {
 					choice = dm.decideReg(sumNbet.top()[0], dealer->getValue(), false, ace > 0);
-					cout << "The computer has chosen to " << choice << "\n";
+					AIMove(choice);
 				}
 			}
 		}
@@ -279,51 +250,11 @@ void Hand::turn(Deck& deck, DM& dm, Card* dealer) {
 			hand.push_back(splitted.top());
 			array<int, 2> temp = { splitted.top()->getValue(), sumNbet.top()[1] };
 			sumNbet.push(temp);
+
+			AINextHand();
+
 			draw(deck);
 		}
-	}
-}
-
-void Hand::results(Dealer& d, Deck& deck, DM& dm) {
-	if (blackjack) {
-		cout << "Balckjack!!! " << "\n";
-		money += betDM * 15 / 10;
-
-		sumNbet.pop();
-		blackjack = false;
-
-		return;
-	}
-	int profits; int sum; int bet;
-	int dealer = -1; int count = 0;
-	while (!sumNbet.empty()) {
-		++count;
-		sum = sumNbet.top()[0]; bet = sumNbet.top()[1];
-		if (sum > 21) {
-			cout << "Hand number " << count << " lost " << bet << "\n";
-
-			sumNbet.pop();
-			continue;
-		}
-
-		if (dealer == -1)
-			dealer = d.play(deck, true);
-
-		if (sum < dealer) {
-			cout << "Hand number " << count << " lost " << bet << "\n";
-		}
-
-		else if (sum > dealer) {
-			cout << "Hand number " << count << " won " << bet << "\n";
-
-			money += 2 * bet;
-		}
-		else {
-			cout << "Hand number " << count << " didn't win or lose \n";
-			money += bet;
-		}
-
-		sumNbet.pop();
 	}
 }
 

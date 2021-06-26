@@ -3,6 +3,7 @@
 #include <stdlib.h>     /* srand, rand */
 #include "Card.h"
 #include "practicalFuncs.h"
+#include "graphicsFuncs.h"
 using namespace std;
 
 Card::Card(int num, char type) : num(num), type(type) {}
@@ -36,13 +37,15 @@ string Card::toString() {
 	return ss.str();
 }
 
+int Card::cardIndex() {
+	return (find(cardTypes, cardTypes + 4, this->type) - cardTypes) * 13 + this->num - 1;
+}
 
 Deck::Deck() {
 	//Generate a deck
-	char types[4] = { 'h', 'd', 'c', 's' };
 	for (int i = 0; i < 4; i++) {
 		for (int j = 1; j <= 13; j++)
-			deck.push_back(new Card(j, types[i]));
+			deck.push_back(new Card(j, cardTypes[i]));
 	}
 }
 
@@ -77,20 +80,18 @@ void Dealer::newGame(Deck& deck, bool output) {
 	dealer.push_back(deck.draw());
 	handSum += dealer[0]->getValue();
 	if (!ace && dealer[0]->isAce()) ace = true;
+	//Text
 	if (output)
-		cout << "The dealer's revealed card is " << dealer[0]->toString() << "\n";
+		dealerNewGame(dealer[0]);
 }
 
 int Dealer::play(Deck& deck, bool output) {
-	if (output)
-		cout << "The dealer's cards: " << dealer[0]->toString() << " ";
 	int count = 1;
 	while (handSum < 17) {
 		dealer.push_back(deck.draw());
 		handSum += dealer[count]->getValue();
 		if (!ace && dealer[count]->isAce()) ace = true;
 
-		if (output) cout << dealer[count]->toString() << " ";
 		count++;
 		if (ace && handSum > 21) {
 			ace = false;
@@ -98,7 +99,7 @@ int Dealer::play(Deck& deck, bool output) {
 		}
 	}
 	if (output)
-		cout << "\nHis sum: " << handSum << "\n";
+		dealerHand(dealer, handSum);
 	if (handSum > 21) return 0;
 	return handSum;
 }
